@@ -1394,3 +1394,35 @@ body {
 #volumeSlider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
 }
+/* =======================================================
+   FIX KUCING HITAM KECIL & HOVER GAMBAR UTAMA
+   ======================================================= */
+
+/* Pembungkus area gambar utama dan kucing */
+.about-image {
+    position: relative;
+    width: 100%;
+}
+
+/* Kucing dibuat kecil dan presisi di atas pojok kiri */
+/* Kucing digeser agak ke kanan biar ga terlalu kiri bgt */
+.about-cat-gif {
+    position: absolute;
+    top: -55px;         /* Mengambang pas di atas border */
+    left: 15px;         /* Digeser masuk ke kanan biar pas di atas gambar */
+    width: 95px;        /* Ukuran sedang tetap dipertahankan */
+    height: auto;
+    z-index: 10;        
+    pointer-events: none; 
+}
+
+/* Efek default Gambar Utama: Monokrom (Hitam Putih) */
+.about-img-wrapper img {
+    filter: grayscale(100%);
+    transition: filter 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Ketika area gambar di-hover, gambarnya berubah jadi aslinya (berwarna) */
+.about-image:hover .about-img-wrapper img {
+    filter: grayscale(0%);
+}
