@@ -228,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         rootMargin: '-30% 0px -50% 0px',
         threshold: 0
     };
-
     const sectionObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -265,4 +264,101 @@ document.addEventListener('DOMContentLoaded', function() {
             hero.style.transform = 'translateY(0)';
         }, 2200);
     }
+});
+// =======================================================
+// AUDIO HOVER - EVENT DELEGATION (ANTI DOUBLE, JALAN DI SEMUA SECTION)
+// =======================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const hoverSound = document.getElementById('hoverSound');
+    if (!hoverSound) return;
+
+    // Atur volume suara di sini (0.1 = pelan, 1.0 = kencang sekali)
+    hoverSound.volume = 0.3;
+
+    // Elemen "kolom" yang boleh bunyi ketika di-hover.
+    // Navbar (.nav-menu, .nav-logo, dll) SENGAJA tidak dimasukkan supaya diam.
+    const HOVER_SELECTOR = [
+        '.skill-card',          // kolom keahlian
+        '.project-card',        // kolom proyek
+        '.hero-buttons .btn',   // tombol "Lihat Proyek" & "Hubungi Saya"
+        '.hero-social a',       // icon IG, TikTok, WA
+        '.about-stats .stat',   // kotak statistik (Proyek/Klien/Tahun)
+        '.about-text'           // kotak teks "amateur nya tangerang"
+    ].join(', ');
+
+    // Pakai 1 listener di document (delegation) dengan pengecekan relatedTarget.
+    // Ini yang mencegah bug "double sound": suara hanya diputar saat cursor
+    // BENAR-BENAR baru masuk ke kolom, bukan tiap kali mouse bergerak
+    // di dalam kolom yang sama / berpindah antar elemen anak di dalamnya.
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest(HOVER_SELECTOR);
+        if (!target) return;
+
+        const from = e.relatedTarget;
+        // Kalau posisi asal cursor masih di dalam elemen yang sama, jangan bunyi lagi
+        if (from && target.contains(from)) return;
+
+        // cloneNode supaya hover cepat berturut-turut tetap kedengeran (tidak saling potong)
+        const soundClone = hoverSound.cloneNode();
+        soundClone.volume = hoverSound.volume;
+        soundClone.play().catch(() => {
+            // Browser kadang blokir autoplay sebelum ada interaksi pertama, ini normal
+        });
+    });
+});
+// =======================================================
+// BACKGROUND MUSIC CONTROLLER (CLAI OBSCUR - ALICIA)
+// =======================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+    const volumeSlider = document.getElementById('volumeSlider');
+
+    if (!bgMusic || !musicToggle || !volumeSlider) return;
+
+    // Set Volume Awal lagu (0.4)
+    bgMusic.volume = volumeSlider.value;
+
+    // Trigger play saat ada interaksi pertama kali di layar web
+    const startMusicOnInteraction = () => {
+        bgMusic.play().then(() => {
+            document.removeEventListener('click', startMusicOnInteraction);
+        }).catch(() => {
+            // Ditahan browser sampai interaksi user terdeteksi penuh
+        });
+    };
+    document.addEventListener('click', startMusicOnInteraction);
+
+    // Mute / Unmute lagu tanpa merusak sound hover web
+    musicToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (bgMusic.muted) {
+            bgMusic.muted = false;
+            musicToggle.classList.remove('muted');
+            musicToggle.innerHTML = '<i class="fas fa-music"></i>';
+            volumeSlider.value = bgMusic.volume;
+        } else {
+            bgMusic.muted = true;
+            musicToggle.classList.add('muted');
+            musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            volumeSlider.value = 0;
+        }
+    });
+
+    // Geser volume slider langsung sesuaikan musik latar belakang
+    volumeSlider.addEventListener('input', (e) => {
+        const targetVolume = parseFloat(e.target.value);
+        bgMusic.volume = targetVolume;
+
+        if (targetVolume === 0) {
+            bgMusic.muted = true;
+            musicToggle.classList.add('muted');
+            musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        } else {
+            bgMusic.muted = false;
+            musicToggle.classList.remove('muted');
+            musicToggle.innerHTML = '<i class="fas fa-music"></i>';
+        }
+    });
 });
