@@ -314,7 +314,7 @@ body {
 }
 
 .hero-content {
-    display: grid;
+    display: grid !important; /* Tambahkan !important sementara untuk memotong override */
     grid-template-columns: 1fr 1fr;
     gap: 50px;
     align-items: center;
@@ -454,11 +454,20 @@ body {
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--glass-border);
-    box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
     position: relative;
     z-index: 2;
+    transform: translateZ(0px);
+    
+    /* --- TAMBAHAN EFEK MONOKROM --- */
+    filter: grayscale(100%);
+    transition: filter 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* --- TRIGER KETIKA CURSOR MENGARAH KE PFP --- */
+.profile-wrapper:hover .profile-img {
+    filter: grayscale(0%);
+}
 .profile-ring {
     position: absolute;
     top: -15px;
