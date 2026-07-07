@@ -2145,25 +2145,39 @@ body {
 .np-playlist {
     max-height: 150px; /* Batasi tinggi playlist supaya muncul scrollbar */
     overflow-y: auto;
+    overscroll-behavior: contain; /* <--- PASTIKAN BARIS INI ADA */
     scroll-behavior: smooth;
     padding-right: 4px;
 }
 
 /* Kustomisasi Scrollbar Minimalis */
+/* Tentukan lebar scrollbar (untuk Google Chrome, Edge, Safari, dan Opera) */
 .np-playlist::-webkit-scrollbar {
-    width: 4px;
-}
-.np-playlist::-webkit-scrollbar-track {
-    background: transparent;
-}
-.np-playlist::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-}
-.np-playlist::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    width: 4px; /* Ubah angka ini untuk mengatur ketipisan (misal: 3px atau 4px) */
 }
 
+/* Mengatur bagian track (latar belakang jalur scrollbar) */
+.np-playlist::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); /* Warna background tipis transparan */
+    border-radius: 10px;
+}
+
+/* Mengatur bagian thumb (batang scrollbar yang digeser) */
+.np-playlist::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3); /* Warna batang scrollbar */
+    border-radius: 10px;
+}
+
+/* Efek saat scrollbar didekati/di-hover (opsional) */
+.np-playlist::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5); /* Warnanya jadi sedikit lebih terang */
+}
+
+/* Untuk Firefox */
+.np-playlist {
+    scrollbar-width: thin; /* Membuat scrollbar otomatis tipis di Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+}
 /* --- 3. SPOTIFY HOVER PROGRESS THUMB --- */
 #npProgressBar {
     -webkit-appearance: none;

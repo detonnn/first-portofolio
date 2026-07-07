@@ -165,25 +165,38 @@ function hideLoader() {
     }
 
     if (enterBtn) {
-        // Event klik tombol
-        enterBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+    enterBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 1. Jalankan suara swiper bawaan loader
+        if (isAudioUnlocked) {
+            swiperSound.play().catch(e => console.log("[AUDIO] Swiper error:", e));
+        }
+
+        // 2. KUNCI UTAMA: Putar musik utama SEGERA tanpa delay saat klik enter
+        if (typeof startMusicAfterEnter === 'function') {
+            startMusicAfterEnter();
+        }
+
+        // 3. Panggil fungsi bawaan template kamu untuk nutup loader
+        if (typeof hideLoader === 'function') {
             hideLoader();
-        });
+        }
+    });
 
-        // Fallback: Tekan tombol Enter di keyboard
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && loader && !loader.classList.contains('hide')) {
-                e.preventDefault();
-                hideLoader();
-            }
-        });
+    // Fallback: Tekan tombol Enter di keyboard
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && loader && !loader.classList.contains('hide')) {
+            e.preventDefault();
+            hideLoader();
+        }
+    });
 
-        console.log('[LOADER] Event listener tombol enter terpasang.');
-    } else {
-        console.warn('[LOADER] Tombol enter tidak ditemukan!');
-    }
+    console.log('[LOADER] Event listener tombol enter terpasang.');
+} else {
+    console.warn('[LOADER] Tombol enter tidak ditemukan!');
+}
 
     // ================================================================
     // 2. LENIS SMOOTH SCROLL (DIBUNGKUS TRY-CATCH)
@@ -541,57 +554,58 @@ function hideLoader() {
     // 11. MUSIC PLAYER (KANAN & KIRI) + PLAYLIST
     // ================================================================
     (function() {
-        const bgMusic = document.getElementById('bgMusic');
-        const musicToggle = document.getElementById('musicToggle');
-        const volumeSlider = document.getElementById('volumeSlider');
+    const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+    const volumeSlider = document.getElementById('volumeSlider');
 
-        if (bgMusic && musicToggle && volumeSlider) {
-            bgMusic.volume = volumeSlider.value;
-            let musicUnlocked = false;
+    if (bgMusic && musicToggle && volumeSlider) {
+        bgMusic.volume = volumeSlider.value;
+        
+        // HAPUS ATAU JANGAN GUNAKAN startMusicOnInteraction di sini 
+        // agar mouse bergerak di loader tidak membocorkan lagu duluan.
+        const startMusicOnInteraction = () => {
+            if (typeof musicUnlocked !== 'undefined' && musicUnlocked) return;
+            if (!bgMusic) return;
+            bgMusic.play().then(() => {
+                if (typeof musicUnlocked !== 'undefined') musicUnlocked = true;
+            }).catch(() => {});
+        };
+        const unlockEvents = ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'];
+        unlockEvents.forEach(evt => {
+            document.addEventListener(evt, startMusicOnInteraction, { passive: true });
+        });
 
-            const startMusicOnInteraction = () => {
-                if (musicUnlocked) return;
-                bgMusic.play().then(() => {
-                    musicUnlocked = true;
-                    unlockEvents.forEach(evt => document.removeEventListener(evt, startMusicOnInteraction));
-                }).catch(() => {});
-            };
-            const unlockEvents = ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'];
-            unlockEvents.forEach(evt => {
-                document.addEventListener(evt, startMusicOnInteraction, { passive: true });
-            });
+        musicToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgMusic.muted) {
+                bgMusic.muted = false;
+                musicToggle.classList.remove('muted');
+                musicToggle.innerHTML = '<i class="fas fa-music"></i>';
+                volumeSlider.value = bgMusic.volume;
+            } else {
+                bgMusic.muted = true;
+                musicToggle.classList.add('muted');
+                musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                volumeSlider.value = 0;
+            }
+        });
 
-            musicToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (bgMusic.muted) {
-                    bgMusic.muted = false;
-                    musicToggle.classList.remove('muted');
-                    musicToggle.innerHTML = '<i class="fas fa-music"></i>';
-                    volumeSlider.value = bgMusic.volume;
-                } else {
-                    bgMusic.muted = true;
-                    musicToggle.classList.add('muted');
-                    musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                    volumeSlider.value = 0;
-                }
-            });
+        volumeSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            bgMusic.volume = val;
+            if (val === 0) {
+                bgMusic.muted = true;
+                musicToggle.classList.add('muted');
+                musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                bgMusic.muted = false;
+                musicToggle.classList.remove('muted');
+                musicToggle.innerHTML = '<i class="fas fa-music"></i>';
+            }
+        });
+    }
 
-            volumeSlider.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                bgMusic.volume = val;
-                if (val === 0) {
-                    bgMusic.muted = true;
-                    musicToggle.classList.add('muted');
-                    musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                } else {
-                    bgMusic.muted = false;
-                    musicToggle.classList.remove('muted');
-                    musicToggle.innerHTML = '<i class="fas fa-music"></i>';
-                }
-            });
-        }
-
-        // NavCat walking animation
+    // NavCat walking animation
         const navCat = document.getElementById('navCat');
         const navLogo = document.querySelector('.nav-logo');
         const contactLink = document.querySelector('.nav-menu a[href="#contact"]');
@@ -646,9 +660,15 @@ function hideLoader() {
 
             if (!audioUtama || playlistItems.length === 0) throw new Error('Elemen musik tidak lengkap');
 
-            let currentIndex = playlistItems.findIndex(li => li.classList.contains('active'));
-            if (currentIndex === -1) currentIndex = 0;
+            // KODE BARU (FITUR RANDOM PLAYING SAAT MASUK):
+// 1. Acak indeks awal saat user pertama kali masuk halaman
+let currentIndex = Math.floor(Math.random() * playlistItems.length);
 
+// 2. Atur class 'active' di HTML agar pindah ke lagu yang terpilih secara acak tersebut
+playlistItems.forEach(li => li.classList.remove('active'));
+if (playlistItems[currentIndex]) {
+    playlistItems[currentIndex].classList.add('active');
+}
             function formatTime(seconds) {
                 if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '0:00';
                 const m = Math.floor(seconds / 60);
@@ -965,7 +985,20 @@ function hideLoader() {
             }
             animateParticles();
         })();
-    })();
 
     console.log('[PORTAL] Semua modul selesai dimuat!');
+
+    window.startMusicAfterEnter = function() {
+    const bgMusic = document.getElementById('bgMusic'); // Ambil element audio asli
+    if (bgMusic) {
+        console.log('[AUDIO] Memutar musik utama secara instan setelah Enter...');
+        bgMusic.muted = false; // Pastikan tidak ter-mute
+        bgMusic.play()
+            .then(() => console.log('[AUDIO] Musik utama berhasil berputar!'))
+            .catch(error => console.log('[AUDIO] Playback terblokir:', error));
+    } else {
+        console.warn('[AUDIO] Elemen #bgMusic tidak ditemukan!');
+}
+};
+})(jQuery);
 });
