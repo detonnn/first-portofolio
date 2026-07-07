@@ -625,6 +625,7 @@ function hideLoader() {
         }
 
         // LEFT MUSIC PLAYER (Now Playing Widget)
+       // LEFT MUSIC PLAYER (Now Playing Widget)
         try {
             const leftToggleBtn = document.getElementById('leftPlayerToggle');
             const leftPlayerBox = document.querySelector('.left-music-player');
@@ -639,7 +640,6 @@ function hideLoader() {
             const npPrevBtn = document.getElementById('npPrev');
             const npNextBtn = document.getElementById('npNext');
             const npProgressBar = document.getElementById('npProgressBar');
-            const npProgressFill = document.getElementById('npProgressFill');
             const npCurrentTime = document.getElementById('npCurrentTime');
             const npDuration = document.getElementById('npDuration');
             const npVolumeSlider = document.getElementById('npVolumeSlider');
@@ -671,18 +671,25 @@ function hideLoader() {
                 const item = playlistItems[index];
                 if (!item) return;
                 currentIndex = index;
+
                 const src = item.getAttribute('data-src');
-                const title = item.getAttribute('data-title') || item.textContent.trim();
-                const artist = item.getAttribute('data-artist') || '';
+                const title = item.getAttribute('data-title') || 'Unknown Title';
+                const artist = item.getAttribute('data-artist') || 'Unknown Artist';
+                const cover = item.getAttribute('data-cover') || 'default-cover.jpg';
 
                 playlistItems.forEach(li => li.classList.remove('active'));
                 item.classList.add('active');
 
                 audioUtama.src = src;
+
+                const coverImg = document.getElementById('npCoverImg');
+                if (coverImg) coverImg.src = cover;
+
                 if (npTitle) npTitle.textContent = title;
                 if (npArtist) npArtist.textContent = artist;
                 if (teksJudulLaguKanan) teksJudulLaguKanan.textContent = artist ? `${title} - ${artist}` : title;
-                if (npProgressFill) npProgressFill.style.width = '0%';
+                
+                if (npProgressBar) npProgressBar.value = 0; // Fix slider bulatan mereset
                 if (npCurrentTime) npCurrentTime.textContent = '0:00';
                 if (npDuration) npDuration.textContent = '-0:00';
 
@@ -692,9 +699,7 @@ function hideLoader() {
             }
 
             if (leftToggleBtn && leftPlayerBox) {
-                leftToggleBtn.addEventListener('click', () => {
-                    leftPlayerBox.classList.toggle('open');
-                });
+                leftToggleBtn.addEventListener('click', () => leftPlayerBox.classList.toggle('open'));
             }
 
             playlistItems.forEach((item, index) => {
@@ -703,11 +708,8 @@ function hideLoader() {
 
             if (npPlayPauseBtn) {
                 npPlayPauseBtn.addEventListener('click', () => {
-                    if (audioUtama.paused) {
-                        audioUtama.play().catch(err => console.log('Gagal play:', err));
-                    } else {
-                        audioUtama.pause();
-                    }
+                    if (audioUtama.paused) audioUtama.play().catch(err => console.log('Gagal play:', err));
+                    else audioUtama.pause();
                 });
             }
 
@@ -724,10 +726,11 @@ function hideLoader() {
                 });
             }
 
+            // Fix supaya bar buletan ngikutin menit lagu berjalan
             audioUtama.addEventListener('timeupdate', () => {
                 if (!audioUtama.duration) return;
                 const percent = (audioUtama.currentTime / audioUtama.duration) * 100;
-                if (npProgressFill) npProgressFill.style.width = `${percent}%`;
+                if (npProgressBar) npProgressBar.value = percent; 
                 if (npCurrentTime) npCurrentTime.textContent = formatTime(audioUtama.currentTime);
                 if (npDuration) npDuration.textContent = `-${formatTime(audioUtama.duration - audioUtama.currentTime)}`;
             });
@@ -738,17 +741,16 @@ function hideLoader() {
 
             audioUtama.addEventListener('play', () => updatePlayIcon(true));
             audioUtama.addEventListener('pause', () => updatePlayIcon(false));
-
             audioUtama.addEventListener('ended', () => {
                 const newIndex = (currentIndex + 1) % playlistItems.length;
                 loadTrack(newIndex, true);
             });
 
+            // Fix supaya buletan bisa di-drag/ditarik (seek)
             if (npProgressBar) {
-                npProgressBar.addEventListener('click', (e) => {
+                npProgressBar.addEventListener('input', (e) => {
                     if (!audioUtama.duration) return;
-                    const rect = npProgressBar.getBoundingClientRect();
-                    const percent = (e.clientX - rect.left) / rect.width;
+                    const percent = e.target.value / 100;
                     audioUtama.currentTime = percent * audioUtama.duration;
                 });
             }

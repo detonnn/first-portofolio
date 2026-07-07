@@ -2122,3 +2122,86 @@ body {
     0% { transform: translate3d(0, 0, 0) rotate(0); }
     100% { transform: translate3d(160px, -20px, 90px) rotateX(-55deg) rotateY(-25deg) rotateZ(-45deg); opacity: 0.9; }
 }
+
+/* --- 1. AMAN: STYLING MUSIC COVER (SAMA SEKALI GA UBAH BG UTAMA) --- */
+.np-cover-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+}
+
+.np-cover-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* --- 2. SMOOTH SCROLLING UNTUK PLAYLIST --- */
+.np-playlist {
+    max-height: 150px; /* Batasi tinggi playlist supaya muncul scrollbar */
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    padding-right: 4px;
+}
+
+/* Kustomisasi Scrollbar Minimalis */
+.np-playlist::-webkit-scrollbar {
+    width: 4px;
+}
+.np-playlist::-webkit-scrollbar-track {
+    background: transparent;
+}
+.np-playlist::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+.np-playlist::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* --- 3. SPOTIFY HOVER PROGRESS THUMB --- */
+#npProgressBar {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    outline: none;
+}
+
+/* Efek slider lingkaran kecil ala spotify waktu di-hover */
+#npProgressBar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: 0; /* Sembunyi secara default */
+    transition: opacity 0.1s ease;
+}
+
+.np-progress-container:hover #npProgressBar::-webkit-slider-thumb {
+    opacity: 1; /* Muncul pas di-hover */
+}
+
+/* Supaya support Firefox juga */
+#npProgressBar::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border: none;
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+.np-progress-container:hover #npProgressBar::-moz-range-thumb {
+    opacity: 1;
+}
