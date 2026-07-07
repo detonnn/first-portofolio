@@ -29,28 +29,29 @@
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar">
+   <!-- Navigation -->
+<nav class="navbar">
         <div class="nav-container">
-            <div class="nav-logo">
+            <img src="16bit-80s.gif" alt="Walking Cat" class="nav-cat-walking" id="navCat">
+
+            <div class="nav-logo" data-aos="fade-right">
                 <span>Ibnu dexton</span>
             </div>
-                <ul class="nav-menu">
-    <li><a href="#home">Home</a></li>
-    <li><a href="#about">Tentang</a></li>
-    <li><a href="#skills">Keahlian</a></li>
-    <li><a href="#projects">Proyek</a></li>
-    <li><a href="#contact">Kontak</a></li>
-    <div class="nav-indicator"></div>
-</ul>
-            <div class="nav-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
+            <ul class="nav-menu">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#about">Tentang</a></li>
+                <li><a href="#skills">Keahlian</a></li>
+                <li><a href="#projects">Proyek</a></li>
+                <li><a href="#contact">Kontak</a></li>
+                <div class="nav-indicator"></div>
+            </ul>
+            <div class="nav-toggle" id="mobile-menu" data-aos="fade-left">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </div>
         </div>
     </nav>
-
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-container">
@@ -290,25 +291,63 @@
         </div>
     </footer>
 
-    <!-- Lenis Smooth Scroll Library -->
-        <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-        <script src="script.js"></script>
-        <audio id="hoverSound" src="hover.MP3" preload="auto"></audio>
-        <!-- ... kode web lu yang lain ... -->
-
-<!-- AUDIO SOUNDTRACK -->
-    <!-- Menggunakan file musik yang lu tuju -->
-    <audio id="bgMusic" src="clai_obscur.mp3" loop preload="auto"></audio>
+    <!-- AUDIO SOUNDTRACK -->
+    <audio id="bgMusic" src="clai_obscur.mp3" preload="auto"></audio>
 
     <!-- TOMBOL MUSIK GLASSMORPHISM (KANAN BAWAH) -->
     <div class="music-controller">
         <div class="volume-popover">
-            <span class="track-title">Clair Obscur: Expedition 33 - Alicia</span>
+            <span class="track-title" id="miniTrackTitle">Clair Obscur: Expedition 33 - Alicia</span>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.4">
         </div>
         <button id="musicToggle" class="music-btn" title="Mute/Unmute Musik">
             <i class="fas fa-music"></i>
         </button>
+    </div>
+
+    <div class="left-music-player" id="leftMusicPlayer">
+        
+        <div class="now-playing-card" id="leftPlayerPanel">
+            <div class="np-header">
+                <div class="np-art"><i class="fas fa-compact-disc"></i></div>
+                <div class="np-info">
+                    <span class="np-eyebrow">Sedang Diputar</span>
+                    <h4 class="np-title" id="npTitle">Clair Obscur: Expedition 33</h4>
+                    <p class="np-artist" id="npArtist">Alicia</p>
+                </div>
+            </div>
+
+            <div class="np-progress-bar" id="npProgressBar">
+                <div class="np-progress-fill" id="npProgressFill"></div>
+            </div>
+            <div class="np-time-row">
+                <span id="npCurrentTime">0:00</span>
+                <span id="npDuration">-0:00</span>
+            </div>
+
+            <div class="np-controls">
+                <button id="npPrev" class="np-ctrl-btn" title="Lagu Sebelumnya"><i class="fas fa-backward-step"></i></button>
+                <button id="npPlayPause" class="np-ctrl-btn np-play" title="Play/Pause"><i class="fas fa-pause"></i></button>
+                <button id="npNext" class="np-ctrl-btn" title="Lagu Berikutnya"><i class="fas fa-forward-step"></i></button>
+            </div>
+
+            <div class="np-volume">
+                <i class="fas fa-volume-low"></i>
+                <input type="range" id="npVolumeSlider" min="0" max="1" step="0.05" value="0.4">
+                <i class="fas fa-volume-high"></i>
+            </div>
+
+            <ul id="musicPlaylist" class="np-playlist">
+                <li data-src="clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" class="active">Clair Obscur: Expedition 33 - Alicia</li>
+                <li data-src="Drake_-_Janice_STFU_-_DrakeVEVO.mp3" data-title="Janice (STFU)" data-artist="Drake">Janice (STFU) - Drake</li>
+                <li data-src="The_1975_-_About_You__Official__-_The1975VEVO.mp3" data-title="About You" data-artist="The 1975">About You - The 1975</li>
+            </ul>
+        </div>
+
+        <button class="left-player-toggle" id="leftPlayerToggle" title="Buka Music Player">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
     </div>
 
     <!-- Lenis Smooth Scroll Library -->
