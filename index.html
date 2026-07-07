@@ -126,6 +126,8 @@
         <img src="GARUDA PS 2026.jpg" alt="About Ibnu">
     </div>
 </div>      </div>
+<!-- Tambahkan di dalam section id="about" -->
+<audio id="tickSound" src="counting.MP3" preload="auto"></audio>
         </div>
     </section>
 
@@ -246,13 +248,15 @@
     
 
     <!-- Contact Section -->
-    <section id="contact" class="contact">
+    <section id="contact" class="contact reveal-init">
         <div class="container">
             <div class="section-header">
                 <h2>Hubungi Saya</h2>
                 <div class="underline"></div>
             </div>
+            
             <div class="contact-content">
+                <!-- Info Kontak -->
                 <div class="contact-info">
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
@@ -266,24 +270,72 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <span>Tangerang, Indonesia</span>
                     </div>
-                    <div class="contact-social">
-                        <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
-                        <a href="#" target="_blank"><i class="fab fa-dribbble"></i></a>
-                        <a href="#" target="_blank"><i class="fab fa-behance"></i></a>
-                        <a href="#" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                   <div class="contact-social">
+                      <a href="https://www.instagram.com/dxtnn_" target="_blank"><i class="fab fa-instagram"></i></a>
+                      <a href="https://www.tiktok.com/@risemss" target="_blank"><i class="fab fa-tiktok"></i></a>
+                      <a href="https://github.com/detonnn" target="_blank"><i class="fab fa-github"></i></a> <!-- Ini yang diganti -->
+                      <a href="https://wa.me/6285281144792" target="_blank"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
+
+                <!-- Form Kontak Animasi -->
                 <form class="contact-form" id="contactForm">
-                    <input type="text" placeholder="Nama Lengkap" required>
-                    <input type="email" placeholder="Email" required>
-                    <input type="text" placeholder="Subjek">
-                    <textarea rows="5" placeholder="Pesan Anda..." required></textarea>
-                    <button type="submit" class="btn btn-primary">Kirim Pesan</button>
+                    <div class="input-group">
+                        <input type="text" id="contactName" placeholder=" " required>
+                        <label for="contactName">Nama Lengkap</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="contactEmail" placeholder=" " required>
+                        <label for="contactEmail">Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="contactSubject" placeholder=" ">
+                        <label for="contactSubject">Subjek</label>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="contactMessage" rows="5" placeholder=" " required></textarea>
+                        <label for="contactMessage">Pesan Anda...</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-animate">Kirim Pesan <i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
+
+            <!-- Bagian Komentar Glassmorphism -->
+            <div class="comments-section reveal-init">
+                <h3>Apa Kata Pengunjung</h3>
+                
+                <div class="comments-list" id="commentsList">
+                    <!-- Komentar Dummy -->
+                    <div class="comment-card">
+                        <div class="comment-avatar"><i class="fas fa-user-astronaut"></i></div>
+                        <div class="comment-body">
+                            <h4>Rangga Desainer</h4>
+                            <p>Gila, interfacenya smooth banget bro! Terutama efek transisi pas ngescroll. Semangat terus karyanya 🔥</p>
+                            <span class="comment-time">1 jam yang lalu</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Tambah Komentar -->
+                <form id="commentForm" class="comment-form">
+                    <h4>Tinggalkan Jejakmu</h4>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <input type="text" id="commentName" placeholder=" " required>
+                            <label for="commentName">Nama Kamu</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="commentText" rows="2" placeholder=" " required></textarea>
+                        <label for="commentText">Komentar mantapmu...</label>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-animate">Kirim Komentar <i class="fas fa-comment-dots"></i></button>
+                </form>
+            </div>
+            
         </div>
     </section>
-
+    
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -353,6 +405,7 @@
     <!-- Lenis Smooth Scroll Library -->
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
     <script src="script.js"></script>
-    <audio id="hoverSound" src="hover.MP3" preload="auto"></audio>
+    <audio id="hoverSound" src="hov.MP3" preload="auto"></audio>
+    
 </body>
 </html>

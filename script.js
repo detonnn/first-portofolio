@@ -166,45 +166,82 @@ document.addEventListener('DOMContentLoaded', function() {
         revealObserver.observe(section);
     });
 
-    function animateCounters() {
+function animateCounters() {
+    const counters = document.querySelectorAll('.stat-number');
+    const tickSound = document.getElementById('tickSound');
+    
+    // Atur volume (0.0 sampai 1.0), misal 0.2 agar pelan
+    if (tickSound) tickSound.volume = 0.2; 
+
+    counters.forEach(counter => {
+        // Cek jika sudah teranimasi, lewati
+        if (counter.classList.contains('counting')) return;
+
+        counter.classList.add('counting');
+        const target = +counter.getAttribute('data-target');
+        const duration = 1500;
+        const stepTime = Math.max(Math.floor(duration / target), 30);
+        let start = 0;
+
+        const timer = setInterval(() => {
+            start += 1;
+            
+            // Play Sound
+            if (tickSound) {
+                tickSound.currentTime = 0;
+                tickSound.play().catch(e => {});
+            }
+
+            counter.textContent = (counter.getAttribute('data-target') === '4') ? start : start + '+';
+
+            // Kondisi saat animasi selesai
+            if (start >= target) {
+                clearInterval(timer);
+                counter.classList.remove('counting');
+                
+                // Hentikan suara seketika saat hitungan selesai
+                if (tickSound) {
+                    tickSound.pause();
+                    tickSound.currentTime = 0;
+                }
+            }
+        }, stepTime);
+
+        counter.dataset.timer = timer;
+    });
+}
+// Update Event Listener pada aboutBox
+const aboutBox = document.querySelector('.about-text');
+if (aboutBox) {
+    const tickSound = document.getElementById('tickSound');
+
+    // Trigger saat masuk (mouseenter)
+    aboutBox.addEventListener('mouseenter', function() {
         const counters = document.querySelectorAll('.stat-number');
         counters.forEach(counter => {
-            if (counter.classList.contains('counting')) return;
-
-            counter.classList.add('counting');
-            const target = +counter.getAttribute('data-target');
-            const duration = 1500;
-            const stepTime = Math.max(Math.floor(duration / target), 30);
-            let start = 0;
-
-            const timer = setInterval(() => {
-                start += 1;
-                if (counter.getAttribute('data-target') === '4') {
-                    counter.textContent = start;
-                } else {
-                    counter.textContent = start + '+';
-                }
-
-                if (start >= target) {
-                    clearInterval(timer);
-                    counter.classList.remove('counting');
-                    counter.classList.add('counted');
-                }
-            }, stepTime);
+            counter.classList.remove('counted');
         });
-    }
+        animateCounters();
+    });
 
-    const aboutBox = document.querySelector('.about-text');
-    if (aboutBox) {
-        aboutBox.addEventListener('mouseenter', function() {
-            const counters = document.querySelectorAll('.stat-number');
-            counters.forEach(counter => {
-                counter.classList.remove('counted');
-            });
-            animateCounters();
+    // Stop saat keluar (mouseleave)
+    aboutBox.addEventListener('mouseleave', function() {
+        const counters = document.querySelectorAll('.stat-number');
+        const tickSound = document.getElementById('tickSound');
+        
+        // Hentikan interval
+        counters.forEach(counter => {
+            clearInterval(counter.dataset.timer);
+            counter.classList.remove('counting');
         });
-    }
-
+        
+        // Hentikan suara
+        if (tickSound) {
+            tickSound.pause();
+            tickSound.currentTime = 0;
+        }
+    });
+}
     const menuLinks = document.querySelectorAll('.nav-menu a');
     const sectionsToWatch = document.querySelectorAll('section[id]');
     const indicator = document.querySelector('.nav-indicator');
@@ -265,9 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2200);
     }
 });
-// =======================================================
-// AUDIO HOVER - WEB AUDIO API (OPTIMIZED FOR HOME & ABOUT)
-// =======================================================
 document.addEventListener('DOMContentLoaded', () => {
     const hoverSoundElement = document.getElementById('hoverSound');
     if (!hoverSoundElement) return;
@@ -286,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const arrayBuffer = await response.arrayBuffer();
             audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
             isAudioReady = true;
-            console.log('[Hover Sound] Siap diputar');
+            console.log('[hov Sound] Siap diputar');
 
             // 2. Eksekusi semua antrian
             while (pendingPlays.length) {
@@ -294,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fn();
             }
         } catch (err) {
-            console.error('[Hover Sound] Gagal preload:', err);
+            console.error('[hov Sound] Gagal preload:', err);
         }
     }
 
@@ -335,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
         '.project-card',
         '.hero-buttons .btn',
         '.hero-social a',
-        '.about-text',
         '.profile-wrapper'
     ].join(', ');
 
@@ -695,7 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const arrayBuffer = await response.arrayBuffer();
             hoverAudioBuffer = await hoverAudioCtx.decodeAudioData(arrayBuffer);
             hoverIsReady = true;
-            console.log('[Hover Sound PFP] Siap!');
+            console.log('[hov Sound PFP] Siap!');
 
             // Eksekusi antrian
             while (hoverPending.length) {
@@ -703,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fn();
             }
         } catch (err) {
-            console.error('[Hover Sound PFP] Gagal:', err);
+            console.error('[hov Sound PFP] Gagal:', err);
         }
     }
 
@@ -739,26 +772,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // === TARGET SPESIAL: PFP & ABOUT ===
-    const targetElements = [
-        document.querySelector('.profile-wrapper'),
-        document.querySelector('.about-text')
-    ];
+const targetElements = [
+    document.querySelector('.profile-wrapper') 
+    // .about-text sudah dihapus agar suara hover hilang
+];
 
-    targetElements.forEach(el => {
-        if (!el) return;
+targetElements.forEach(el => {
+    if (!el) return;
 
-        // Hapus listener lama (kalau ada duplikat)
-        el.removeEventListener('mouseenter', playHoverSoundSpesial);
-        el.removeEventListener('mouseover', playHoverSoundSpesial);
+    // Hapus listener lama (kalau ada duplikat)
+    el.removeEventListener('mouseenter', playHoverSoundSpesial);
+    el.removeEventListener('mouseover', playHoverSoundSpesial);
 
-        // PAKAI mouseover (lebih responsif daripada mouseenter)
-        el.addEventListener('mouseover', function(e) {
-            // Pastikan targetnya benar (bukan anak elemen)
-            if (e.target.closest('.profile-wrapper') || e.target.closest('.about-text')) {
-                playHoverSoundSpesial();
-            }
-        }, { passive: true });
-    });
+    // PAKAI mouseover (lebih responsif daripada mouseenter)
+    el.addEventListener('mouseover', function(e) {
+        // Pastikan targetnya benar (bukan anak elemen)
+        if (e.target.closest('.profile-wrapper')) {
+            playHoverSoundSpesial();
+        }
+    }, { passive: true });
+});
 
     // === WARMUP: BIKIN CONTEXT LANGSUNG ACTIVE SAAT HOVER PERTAMA ===
     function warmupContext() {
@@ -777,4 +810,62 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('mousemove', warmupContext, { passive: true, once: true });
     document.addEventListener('click', warmupContext, { passive: true, once: true });
     document.addEventListener('touchstart', warmupContext, { passive: true, once: true });
+});
+
+// =======================================================
+// FITUR KOMENTAR PENGUNJUNG (LIVE ADD)
+// =======================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const commentForm = document.getElementById('commentForm');
+    const commentsList = document.getElementById('commentsList');
+
+    if (commentForm && commentsList) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('commentName');
+            const textInput = document.getElementById('commentText');
+            
+            const name = nameInput.value.trim();
+            const text = textInput.value.trim();
+            
+            if (name && text) {
+                // Buat elemen komentar baru
+                const commentCard = document.createElement('div');
+                commentCard.className = 'comment-card';
+                
+                // Tambahkan elemen HTML di dalamnya
+                commentCard.innerHTML = `
+                    <div class="comment-avatar"><i class="fas fa-user-astronaut"></i></div>
+                    <div class="comment-body">
+                        <h4>${name}</h4>
+                        <p>${text}</p>
+                        <span class="comment-time">Baru saja</span>
+                    </div>
+                `;
+                
+                // Masukkan komentar baru ke paling atas daftar
+                commentsList.insertBefore(commentCard, commentsList.firstChild);
+                
+                // Reset Input form
+                this.reset();
+                
+                // Ubah gaya tombol sebentar jadi sukses
+                const btn = this.querySelector('button');
+                const originalHTML = btn.innerHTML;
+                const originalClass = btn.className;
+                
+                btn.innerHTML = 'Komentar Terkirim! <i class="fas fa-check-circle"></i>';
+                btn.style.backgroundColor = '#4CAF50';
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#4CAF50';
+                
+                // Balikkan tombol setelah 3 detik
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style = '';
+                }, 3000);
+            }
+        });
+    }
 });
