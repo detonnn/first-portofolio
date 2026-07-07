@@ -126,21 +126,24 @@ body {
 }
 
 /* Loader */
+/* Loader */
+/* Loader - Aesthetic Click to Enter */
 #loader {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--dark);
+    background: #000000; /* Hitam pekat premium */
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 99999; /* Tetap berada di lapisan paling atas */
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), visibility 1s cubic-bezier(0.25, 1, 0.5, 1);
     text-align: center;
+    overflow: hidden;
 }
 
 #loader.hide {
@@ -149,32 +152,60 @@ body {
     pointer-events: none;
 }
 
-.loader-content h2 {
-    color: var(--primary);
-    font-size: 2.5rem;
-    margin-top: 20px;
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.loader-title {
+    color: #ffffff;
+    font-size: 2.3rem;
     font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: loaderFadeIn 1.2s ease forwards 0.2s;
 }
 
-.loader-content p {
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-top: 10px;
+.enter-btn {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 45px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    letter-spacing: 3px;
+    border-radius: 50px; /* Desain kapsul minimalis */
+    cursor: pointer;
+    text-transform: lowercase;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: loaderFadeIn 1.2s ease forwards 0.7s;
+    pointer-events: auto; /* PASTIKAN BISA DIKLIK */
+    position: relative;
+    z-index: 100000; /* Lebih tinggi dari loader */
 }
 
-.loader-spinner {
-    width: 70px;
-    height: 70px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    margin: 0 auto;
-    animation: spin 1s linear infinite;
+/* Efek Hover Keren Gg */
+.enter-btn:hover {
+    color: #000000;
+    background: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    letter-spacing: 5px;
+    transform: scale(1.05);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes loaderFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Navbar */
@@ -1976,4 +2007,118 @@ body {
     height: 100%;
     z-index: 5; /* Melayang di depan semua konten section, tapi di bawah navbar (1000+) */
     pointer-events: none; /* Tetap transparan terhadap klik/hover di bawahnya */
+}
+
+/* =======================================================
+   EFEK SHATTER/PECAH TEXT IBNU DEXTON ON HOVER
+   ======================================================= */
+.loader-title {
+    cursor: default;
+    display: inline-block;
+    perspective: 1000px;
+}
+
+/* Base style untuk tiap huruf */
+.loader-title span {
+    display: inline-block;
+    transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                opacity 0.5s ease, 
+                filter 0.5s ease;
+}
+
+/* =======================================================
+   EFEK ZERO-GRAVITY SHATTER (PURE JAVASCRIPT PHYSICS)
+   ======================================================= */
+.loader-title {
+    cursor: pointer;
+    display: inline-block;
+    perspective: 1200px;
+}
+
+.loader-title span {
+    display: inline-block;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+    /* Kita hilangkan transisi CSS-nya agar murni dikontrol oleh requestAnimationFrame */
+    transition: opacity 1s ease; 
+}
+
+.loader-title.shattered {
+    pointer-events: none; /* Amankan area kursor dari sisa serpihan teks */
+}
+
+/* Sembunyikan karakter spasi secara instan */
+.loader-title.shattered span.space {
+    opacity: 0 !important;
+
+}
+/* =======================================================
+   STAGGERED DELAY & ASSIGNMENT (EFEK RIAK LEDAKAN)
+   ======================================================= */
+/* Setiap huruf diberi jeda (delay) beberapa milidetik dari huruf sebelumnya */
+
+.loader-title.shattered span:nth-child(1)  { animation-name: scatter-1; animation-delay: 0s; }
+.loader-title.shattered span:nth-child(2)  { animation-name: scatter-2; animation-delay: 0.04s; }
+.loader-title.shattered span:nth-child(3)  { animation-name: scatter-3; animation-delay: 0.08s; }
+.loader-title.shattered span:nth-child(4)  { animation-name: scatter-4; animation-delay: 0.12s; }
+.loader-title.shattered span:nth-child(5)  { opacity: 0; } /* Spasi */
+.loader-title.shattered span:nth-child(6)  { animation-name: scatter-5; animation-delay: 0.16s; }
+.loader-title.shattered span:nth-child(7)  { animation-name: scatter-6; animation-delay: 0.2s; }
+.loader-title.shattered span:nth-child(8)  { animation-name: scatter-7; animation-delay: 0.24s; }
+.loader-title.shattered span:nth-child(9)  { animation-name: scatter-8; animation-delay: 0.28s; }
+.loader-title.shattered span:nth-child(10) { animation-name: scatter-9; animation-delay: 0.32s; }
+.loader-title.shattered span:nth-child(11) { animation-name: scatter-10; animation-delay: 0.36s; }
+
+/* =======================================================
+   CINEMATIC SCATTER POSITIONS (MENCAR & DIAM MELAYANG)
+   ======================================================= */
+
+@keyframes scatter-1 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(-110px, -45px, 80px) rotateX(45deg) rotateY(-35deg) rotateZ(-20deg); opacity: 0.9; }
+}
+
+@keyframes scatter-2 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(-60px, -85px, 40px) rotateX(-25deg) rotateY(40deg) rotateZ(35deg); }
+}
+
+@keyframes scatter-3 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(-15px, -70px, -50px) rotateX(50deg) rotateY(15deg) rotateZ(-15deg); opacity: 0.8; }
+}
+
+@keyframes scatter-4 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(45px, -95px, 60px) rotateX(-30deg) rotateY(-45deg) rotateZ(50deg); }
+}
+
+@keyframes scatter-5 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(-90px, 60px, 30px) rotateX(20deg) rotateY(60deg) rotateZ(-40deg); }
+}
+
+@keyframes scatter-6 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(-30px, 85px, -20px) rotateX(-40deg) rotateY(-20deg) rotateZ(25deg); opacity: 0.85; }
+}
+
+@keyframes scatter-7 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(25px, 75px, 120px) rotateX(65deg) rotateY(30deg) rotateZ(15deg); }
+}
+
+@keyframes scatter-8 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(85px, 40px, -10px) rotateX(-15deg) rotateY(-50deg) rotateZ(-30deg); }
+}
+
+@keyframes scatter-9 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(130px, 65px, 50px) rotateX(35deg) rotateY(45deg) rotateZ(60deg); }
+}
+
+@keyframes scatter-10 {
+    0% { transform: translate3d(0, 0, 0) rotate(0); }
+    100% { transform: translate3d(160px, -20px, 90px) rotateX(-55deg) rotateY(-25deg) rotateZ(-45deg); opacity: 0.9; }
 }
