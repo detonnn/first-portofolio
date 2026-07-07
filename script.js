@@ -266,107 +266,109 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 // =======================================================
-// AUDIO HOVER - WEB AUDIO API (ANTI DELAY & ANTI BLOCK)
+// AUDIO HOVER - WEB AUDIO API (OPTIMIZED FOR HOME & ABOUT)
 // =======================================================
 document.addEventListener('DOMContentLoaded', () => {
     const hoverSoundElement = document.getElementById('hoverSound');
     if (!hoverSoundElement) return;
-    const HOVER_SELECTOR = [
-        '.skill-card',          // kolom keahlian
-        '.project-card',        // kolom proyek
-        '.hero-buttons .btn',   // tombol "Lihat Proyek" & "Hubungi Saya"
-        '.hero-social a',       // icon IG, TikTok, WA
-        '.about-stats .stat',   // kotak statistik (Proyek/Klien/Tahun)
-        '.about-text'           // kotak teks "amateur nya tangerang"
-    ].join(', ');
 
     let audioCtx = null;
     let audioBuffer = null;
-    let activeHoverTarget = null;
-    const volumeValue = 0.3; // Atur volume di sini (0.0 sampai 1.0)
+    let isAudioReady = false;
+    const volumeValue = 0.3;
+    let pendingPlays = [];
 
-    // Fungsi untuk setup Web Audio API dan download audio ke memory buffer
-    async function initAudio() {
-        if (audioCtx) return; // Mencegah init ganda
-
-        // Buat Audio Context
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+    // 1. Preload audio segera
+    async function preloadHoverSound() {
         try {
-            // Ambil file audio dari element <audio src="...">
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const response = await fetch(hoverSoundElement.src);
             const arrayBuffer = await response.arrayBuffer();
-            // Decode agar siap dimainkan instan tanpa loading lagi
             audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            isAudioReady = true;
+            console.log('[Hover Sound] Siap diputar');
+
+            // 2. Eksekusi semua antrian
+            while (pendingPlays.length) {
+                const fn = pendingPlays.shift();
+                fn();
+            }
         } catch (err) {
-            console.error("Gagal me-load audio hover:", err);
+            console.error('[Hover Sound] Gagal preload:', err);
         }
     }
 
-    // Fungsi untuk memainkan suara (Tanpa delay karena diambil dari buffer)
+    preloadHoverSound();
+
+    // 3. Fungsi play utama
     function playHoverSound() {
-        if (!audioCtx || !audioBuffer) return;
-
-        // Jika browser mematikan audio (suspend), paksa aktifkan kembali
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
+        if (!isAudioReady || !audioCtx || !audioBuffer) {
+            pendingPlays.push(() => playHoverSound());
+            return;
         }
 
-        // Buat source node baru tiap kali play (sangat ringan via Audio API)
-        const soundSource = audioCtx.createBufferSource();
-        const gainNode = audioCtx.createGain();
+        // Jika context suspended, resume dulu
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                executePlay();
+            }).catch(() => {});
+            return;
+        }
 
-        soundSource.buffer = audioBuffer;
-        gainNode.gain.value = volumeValue;
-
-        soundSource.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        soundSource.start(0);
+        executePlay();
     }
 
-    // Trigger interaksi pertama: Begitu user gerak/klik, audio langsung siap di latar belakang
-    const unlockAudio = () => {
-        initAudio().then(() => {
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        });
-        // Hapus listener jika sudah ter-unlock agar hemat memori
-        ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
-            document.removeEventListener(evt, unlockAudio);
-        });
-    };
-    ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
-        document.addEventListener(evt, unlockAudio, { passive: true });
+    function executePlay() {
+        if (!audioCtx || audioCtx.state !== 'running') return;
+        const source = audioCtx.createBufferSource();
+        const gain = audioCtx.createGain();
+        gain.gain.value = volumeValue;
+        source.buffer = audioBuffer;
+        source.connect(gain);
+        gain.connect(audioCtx.destination);
+        source.start(0);
+    }
+
+    // 4. Daftar elemen hover (pastikan semua termasuk home & about)
+    const HOVER_SELECTORS = [
+        '.skill-card',
+        '.project-card',
+        '.hero-buttons .btn',
+        '.hero-social a',
+        '.about-text',
+        '.profile-wrapper'
+    ].join(', ');
+
+    document.querySelectorAll(HOVER_SELECTORS).forEach(el => {
+        // Hapus listener lama (kalau ada) untuk menghindari duplikasi
+        el.removeEventListener('mouseenter', playHoverSound);
+        el.addEventListener('mouseenter', playHoverSound);
     });
 
-    // Event Mouse Over (Deteksi hover kolom)
-    document.addEventListener('mouseover', (e) => {
-        const target = e.target.closest(HOVER_SELECTOR);
-        if (!target) return;
-
-        const from = e.relatedTarget;
-        if (from && target.contains(from)) return;
-
-        // Anti double sound
-        if (target === activeHoverTarget) return;
-        activeHoverTarget = target;
-
-        playHoverSound();
-    });
-
-    // Event Mouse Out (Reset flag kolom)
-    document.addEventListener('mouseout', (e) => {
-        const target = e.target.closest(HOVER_SELECTOR);
-        if (!target) return;
-
-        const to = e.relatedTarget;
-        if (!to || !target.contains(to)) {
-            if (target === activeHoverTarget) {
-                activeHoverTarget = null;
-            }
+    // 5. Warmup: resume context & eksekusi antrian di interaksi pertama
+    let warmupDone = false;
+    function warmupAudioContext() {
+        if (warmupDone) return;
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                // Setelah resume, jalankan antrian yang tertunda
+                while (pendingPlays.length && isAudioReady) {
+                    const fn = pendingPlays.shift();
+                    fn();
+                }
+            }).catch(() => {});
         }
+        warmupDone = true;
+        // Lepas listener
+        ['mousemove', 'click', 'touchstart', 'scroll', 'keydown'].forEach(evt => {
+            document.removeEventListener(evt, warmupAudioContext);
+        });
+    }
+
+    // Pasang listener warmup dengan prioritas tinggi
+    const warmupEvents = ['mousemove', 'click', 'touchstart', 'scroll', 'keydown'];
+    warmupEvents.forEach(evt => {
+        document.addEventListener(evt, warmupAudioContext, { passive: true, once: false });
     });
 });
 
@@ -668,4 +670,111 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error("Ada masalah di script music player:", error);
     }
+    
+});
+
+// =======================================================
+// FIX HOVER SOUND DI PFP & TENTANG SAYA (SPESIAL)
+// =======================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Ambil referensi audio context dari kode sebelumnya (biar satu)
+    let hoverAudioCtx = null;
+    let hoverAudioBuffer = null;
+    let hoverIsReady = false;
+    let hoverPending = [];
+
+    // Cari elemen audio
+    const soundEl = document.getElementById('hoverSound');
+    if (!soundEl) return;
+
+    // Inisialisasi ulang tapi pake variabel global
+    async function initHoverSound() {
+        try {
+            hoverAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const response = await fetch(soundEl.src);
+            const arrayBuffer = await response.arrayBuffer();
+            hoverAudioBuffer = await hoverAudioCtx.decodeAudioData(arrayBuffer);
+            hoverIsReady = true;
+            console.log('[Hover Sound PFP] Siap!');
+
+            // Eksekusi antrian
+            while (hoverPending.length) {
+                const fn = hoverPending.shift();
+                fn();
+            }
+        } catch (err) {
+            console.error('[Hover Sound PFP] Gagal:', err);
+        }
+    }
+
+    initHoverSound();
+
+    // Fungsi play untuk PFP & About
+    function playHoverSoundSpesial() {
+        if (!hoverIsReady || !hoverAudioCtx || !hoverAudioBuffer) {
+            hoverPending.push(() => playHoverSoundSpesial());
+            return;
+        }
+
+        if (hoverAudioCtx.state === 'suspended') {
+            hoverAudioCtx.resume().then(() => {
+                const source = hoverAudioCtx.createBufferSource();
+                const gain = hoverAudioCtx.createGain();
+                gain.gain.value = 0.3;
+                source.buffer = hoverAudioBuffer;
+                source.connect(gain);
+                gain.connect(hoverAudioCtx.destination);
+                source.start(0);
+            }).catch(() => {});
+            return;
+        }
+
+        const source = hoverAudioCtx.createBufferSource();
+        const gain = hoverAudioCtx.createGain();
+        gain.gain.value = 0.3;
+        source.buffer = hoverAudioBuffer;
+        source.connect(gain);
+        gain.connect(hoverAudioCtx.destination);
+        source.start(0);
+    }
+
+    // === TARGET SPESIAL: PFP & ABOUT ===
+    const targetElements = [
+        document.querySelector('.profile-wrapper'),
+        document.querySelector('.about-text')
+    ];
+
+    targetElements.forEach(el => {
+        if (!el) return;
+
+        // Hapus listener lama (kalau ada duplikat)
+        el.removeEventListener('mouseenter', playHoverSoundSpesial);
+        el.removeEventListener('mouseover', playHoverSoundSpesial);
+
+        // PAKAI mouseover (lebih responsif daripada mouseenter)
+        el.addEventListener('mouseover', function(e) {
+            // Pastikan targetnya benar (bukan anak elemen)
+            if (e.target.closest('.profile-wrapper') || e.target.closest('.about-text')) {
+                playHoverSoundSpesial();
+            }
+        }, { passive: true });
+    });
+
+    // === WARMUP: BIKIN CONTEXT LANGSUNG ACTIVE SAAT HOVER PERTAMA ===
+    function warmupContext() {
+        if (hoverAudioCtx && hoverAudioCtx.state === 'suspended') {
+            hoverAudioCtx.resume().catch(() => {});
+        }
+        while (hoverPending.length && hoverIsReady) {
+            const fn = hoverPending.shift();
+            fn();
+        }
+        document.removeEventListener('mousemove', warmupContext);
+        document.removeEventListener('click', warmupContext);
+        document.removeEventListener('touchstart', warmupContext);
+    }
+
+    document.addEventListener('mousemove', warmupContext, { passive: true, once: true });
+    document.addEventListener('click', warmupContext, { passive: true, once: true });
+    document.addEventListener('touchstart', warmupContext, { passive: true, once: true });
 });
