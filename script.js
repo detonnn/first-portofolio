@@ -6,6 +6,20 @@ document.addEventListener('DOMContentLoaded', function() {
         smoothTouch: false
     });
 
+    // ==========================================
+    // JANTUNG PENDETEKSI SCROLL (DI-TUNING HALUS)
+    // ==========================================
+    window.lenis = lenis; 
+    window.targetVelocity = 0;
+    window.currentVelocity = 0;
+    window.scrollVelocity = 0;
+
+    lenis.on('scroll', (e) => {
+        // Pengali dikecilkan jadi 0.6 biar gak over-sensitive/terlalu kencang
+        window.targetVelocity = e.velocity * 0.6; 
+    });
+    // ==========================================
+
     function raf(time) {
         lenis.raf(time);
         requestAnimationFrame(raf);
@@ -170,11 +184,9 @@ function animateCounters() {
     const counters = document.querySelectorAll('.stat-number');
     const tickSound = document.getElementById('tickSound');
     
-    // Atur volume (0.0 sampai 1.0), misal 0.2 agar pelan
     if (tickSound) tickSound.volume = 0.2; 
 
     counters.forEach(counter => {
-        // Cek jika sudah teranimasi, lewati
         if (counter.classList.contains('counting')) return;
 
         counter.classList.add('counting');
@@ -186,7 +198,6 @@ function animateCounters() {
         const timer = setInterval(() => {
             start += 1;
             
-            // Play Sound
             if (tickSound) {
                 tickSound.currentTime = 0;
                 tickSound.play().catch(e => {});
@@ -194,12 +205,10 @@ function animateCounters() {
 
             counter.textContent = (counter.getAttribute('data-target') === '4') ? start : start + '+';
 
-            // Kondisi saat animasi selesai
             if (start >= target) {
                 clearInterval(timer);
                 counter.classList.remove('counting');
                 
-                // Hentikan suara seketika saat hitungan selesai
                 if (tickSound) {
                     tickSound.pause();
                     tickSound.currentTime = 0;
@@ -210,12 +219,11 @@ function animateCounters() {
         counter.dataset.timer = timer;
     });
 }
-// Update Event Listener pada aboutBox
+
 const aboutBox = document.querySelector('.about-text');
 if (aboutBox) {
     const tickSound = document.getElementById('tickSound');
 
-    // Trigger saat masuk (mouseenter)
     aboutBox.addEventListener('mouseenter', function() {
         const counters = document.querySelectorAll('.stat-number');
         counters.forEach(counter => {
@@ -224,18 +232,15 @@ if (aboutBox) {
         animateCounters();
     });
 
-    // Stop saat keluar (mouseleave)
     aboutBox.addEventListener('mouseleave', function() {
         const counters = document.querySelectorAll('.stat-number');
         const tickSound = document.getElementById('tickSound');
         
-        // Hentikan interval
         counters.forEach(counter => {
             clearInterval(counter.dataset.timer);
             counter.classList.remove('counting');
         });
         
-        // Hentikan suara
         if (tickSound) {
             tickSound.pause();
             tickSound.currentTime = 0;
@@ -302,6 +307,7 @@ if (aboutBox) {
         }, 2200);
     }
 });
+
 document.addEventListener('DOMContentLoaded', () => {
     const hoverSoundElement = document.getElementById('hoverSound');
     if (!hoverSoundElement) return;
@@ -312,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeValue = 0.3;
     let pendingPlays = [];
 
-    // 1. Preload audio segera
     async function preloadHoverSound() {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -322,7 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
             isAudioReady = true;
             console.log('[hov Sound] Siap diputar');
 
-            // 2. Eksekusi semua antrian
             while (pendingPlays.length) {
                 const fn = pendingPlays.shift();
                 fn();
@@ -334,14 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     preloadHoverSound();
 
-    // 3. Fungsi play utama
     function playHoverSound() {
         if (!isAudioReady || !audioCtx || !audioBuffer) {
             pendingPlays.push(() => playHoverSound());
             return;
         }
 
-        // Jika context suspended, resume dulu
         if (audioCtx.state === 'suspended') {
             audioCtx.resume().then(() => {
                 executePlay();
@@ -363,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
         source.start(0);
     }
 
-    // 4. Daftar elemen hover (pastikan semua termasuk home & about)
     const HOVER_SELECTORS = [
         '.skill-card',
         '.project-card',
@@ -373,18 +374,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ].join(', ');
 
     document.querySelectorAll(HOVER_SELECTORS).forEach(el => {
-        // Hapus listener lama (kalau ada) untuk menghindari duplikasi
         el.removeEventListener('mouseenter', playHoverSound);
         el.addEventListener('mouseenter', playHoverSound);
     });
 
-    // 5. Warmup: resume context & eksekusi antrian di interaksi pertama
     let warmupDone = false;
     function warmupAudioContext() {
         if (warmupDone) return;
         if (audioCtx && audioCtx.state === 'suspended') {
             audioCtx.resume().then(() => {
-                // Setelah resume, jalankan antrian yang tertunda
                 while (pendingPlays.length && isAudioReady) {
                     const fn = pendingPlays.shift();
                     fn();
@@ -392,20 +390,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(() => {});
         }
         warmupDone = true;
-        // Lepas listener
         ['mousemove', 'click', 'touchstart', 'scroll', 'keydown'].forEach(evt => {
             document.removeEventListener(evt, warmupAudioContext);
         });
     }
 
-    // Pasang listener warmup dengan prioritas tinggi
     const warmupEvents = ['mousemove', 'click', 'touchstart', 'scroll', 'keydown'];
     warmupEvents.forEach(evt => {
         document.addEventListener(evt, warmupAudioContext, { passive: true, once: false });
     });
 });
 
-// =======================================================
 document.addEventListener('DOMContentLoaded', () => {
     const bgMusic = document.getElementById('bgMusic');
     const musicToggle = document.getElementById('musicToggle');
@@ -413,20 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!bgMusic || !musicToggle || !volumeSlider) return;
 
-    // Set Volume Awal lagu (0.4)
     bgMusic.volume = volumeSlider.value;
 
-    // Trigger play saat ada interaksi pertama kali di layar web
-    // Dengerin BANYAK jenis interaksi (bukan cuma klik) biar musik kerasa langsung nyala
     let musicUnlocked = false;
     const startMusicOnInteraction = () => {
         if (musicUnlocked) return;
         bgMusic.play().then(() => {
             musicUnlocked = true;
             removeUnlockListeners();
-        }).catch(() => {
-            // Ditahan browser sampai interaksi user terdeteksi penuh
-        });
+        }).catch(() => {});
     };
     const unlockEvents = ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'];
     function removeUnlockListeners() {
@@ -436,7 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener(evt, startMusicOnInteraction, { passive: true });
     });
 
-    // Mute / Unmute lagu tanpa merusak sound hover web
     musicToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         
@@ -453,7 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Geser volume slider langsung sesuaikan musik latar belakang
     volumeSlider.addEventListener('input', (e) => {
         const targetVolume = parseFloat(e.target.value);
         bgMusic.volume = targetVolume;
@@ -469,9 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-  // =======================================================
-    // LOGIC SCROLL NAVBAR & KUCING PUDAR (FIXED LOOP)
-    // =======================================================
     const navbar = document.querySelector('.navbar');
     const navCat = document.getElementById('navCat');
 
@@ -480,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentScroll > 50) {
             navbar.classList.add('scrolled');
             if (navCat) {
-                navCat.classList.add('visible'); // Menggunakan class CSS agar lebih stabil
+                navCat.classList.add('visible');
             }
         } else {
             navbar.classList.remove('scrolled');
@@ -490,43 +475,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // =======================================================
-    // LOGIC KUCING BERJALAN INSTAN DI NAVBAR (FIXED ANIMATION)
-    // =======================================================
     const navLogo = document.querySelector('.nav-logo');
     const contactLink = document.querySelector('.nav-menu a[href="#contact"]');
     const navbarContainer = document.querySelector('.nav-container');
 
     if (navCat && navLogo && contactLink && navbarContainer) {
         let currentX = 0;
-        let direction = 1; // 1 = Kanan, -1 = Kiri
-        const speed = 1.5; // Kecepatan jalan
+        let direction = 1; 
+        const speed = 1.5; 
 
         function animateNavCat() {
             const containerRect = navbarContainer.getBoundingClientRect();
-            
-            // Ambil koordinat batas kiri dan kanan
             const minX = navLogo.getBoundingClientRect().left - containerRect.left;
             const maxX = contactLink.getBoundingClientRect().left - containerRect.left;
 
-            // Jika posisi awal belum di-set atau bernilai aneh, taruh di minX
             if (currentX <= 0) {
                 currentX = minX || 10; 
             }
 
             currentX += speed * direction;
 
-            // Mentok kanan -> Balik kiri
             if (currentX >= maxX && direction === 1) {
                 direction = -1;
                 navCat.style.transform = `translateX(${currentX}px) scaleX(-1)`;
             } 
-            // Mentok kiri -> Balik kanan
             else if (currentX <= minX && direction === -1) {
                 direction = 1;
                 navCat.style.transform = `translateX(${currentX}px) scaleX(1)`;
             } 
-            // Jalan normal
             else {
                 navCat.style.transform = `translateX(${currentX}px) scaleX(${direction === 1 ? 1 : -1})`;
             }
@@ -534,13 +510,9 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animateNavCat);
         }
 
-        // Jalankan animasinya secara konstan di background
         animateNavCat();
     }
 
-// ==========================================
-    // LOGIC NOW PLAYING WIDGET KIRI (SPOTIFY-STYLE)
-    // ==========================================
     try {
         const leftToggleBtn = document.getElementById('leftPlayerToggle');
         const leftPlayerBox = document.querySelector('.left-music-player');
@@ -573,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // Update ikon play/pause di widget kiri sesuai status audio
         function updatePlayIcon(isPlaying) {
             if (npPlayPauseBtn) {
                 const icon = npPlayPauseBtn.querySelector('i');
@@ -585,7 +556,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (leftPlayerBox) leftPlayerBox.classList.toggle('paused', !isPlaying);
         }
 
-        // Load & (opsional) langsung mainkan lagu berdasarkan index playlist
         function loadTrack(index, autoplay = true) {
             const item = playlistItems[index];
             if (!item) return;
@@ -612,19 +582,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 1. Buka/tutup kartu Now Playing
         if (leftToggleBtn && leftPlayerBox) {
             leftToggleBtn.addEventListener('click', () => {
                 leftPlayerBox.classList.toggle('open');
             });
         }
 
-        // 2. Klik lagu di daftar playlist -> ganti lagu
         playlistItems.forEach((item, index) => {
             item.addEventListener('click', () => loadTrack(index, true));
         });
 
-        // 3. Tombol Play/Pause
         if (npPlayPauseBtn) {
             npPlayPauseBtn.addEventListener('click', () => {
                 if (audioUtama.paused) {
@@ -635,7 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 4. Tombol Sebelumnya / Berikutnya (ganti-ganti lagu)
         if (npPrevBtn) {
             npPrevBtn.addEventListener('click', () => {
                 const newIndex = (currentIndex - 1 + playlistItems.length) % playlistItems.length;
@@ -643,13 +609,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (npNextBtn) {
-            npNextBtn.addEventListener('click', () => {
+            navNextBtn = npNextBtn; 
+            navNextBtn.addEventListener('click', () => {
                 const newIndex = (currentIndex + 1) % playlistItems.length;
                 loadTrack(newIndex, true);
             });
         }
 
-        // 5. Progress bar berjalan otomatis
         audioUtama.addEventListener('timeupdate', () => {
             if (!audioUtama.duration) return;
             const percent = (audioUtama.currentTime / audioUtama.duration) * 100;
@@ -665,13 +631,11 @@ document.addEventListener('DOMContentLoaded', () => {
         audioUtama.addEventListener('play', () => updatePlayIcon(true));
         audioUtama.addEventListener('pause', () => updatePlayIcon(false));
 
-        // Lagu selesai -> otomatis lanjut ke lagu berikutnya di playlist
         audioUtama.addEventListener('ended', () => {
             const newIndex = (currentIndex + 1) % playlistItems.length;
             loadTrack(newIndex, true);
         });
 
-        // 6. Klik di progress bar buat seek/geser posisi lagu
         if (npProgressBar) {
             npProgressBar.addEventListener('click', (e) => {
                 if (!audioUtama.duration) return;
@@ -681,7 +645,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 7. Volume slider di widget kiri, disinkronkan sama slider kanan bawah
         if (npVolumeSlider) {
             npVolumeSlider.value = audioUtama.volume;
             npVolumeSlider.addEventListener('input', (e) => {
@@ -697,124 +660,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Sinkronkan info lagu awal (tanpa autoplay, biar ga kena blokir browser)
         loadTrack(currentIndex, false);
 
     } catch (error) {
         console.error("Ada masalah di script music player:", error);
     }
-    
 });
 
-// =======================================================
-// FIX HOVER SOUND DI PFP & TENTANG SAYA (SPESIAL)
-// =======================================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Ambil referensi audio context dari kode sebelumnya (biar satu)
-    let hoverAudioCtx = null;
-    let hoverAudioBuffer = null;
-    let hoverIsReady = false;
-    let hoverPending = [];
-
-    // Cari elemen audio
-    const soundEl = document.getElementById('hoverSound');
-    if (!soundEl) return;
-
-    // Inisialisasi ulang tapi pake variabel global
-    async function initHoverSound() {
-        try {
-            hoverAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const response = await fetch(soundEl.src);
-            const arrayBuffer = await response.arrayBuffer();
-            hoverAudioBuffer = await hoverAudioCtx.decodeAudioData(arrayBuffer);
-            hoverIsReady = true;
-            console.log('[hov Sound PFP] Siap!');
-
-            // Eksekusi antrian
-            while (hoverPending.length) {
-                const fn = hoverPending.shift();
-                fn();
-            }
-        } catch (err) {
-            console.error('[hov Sound PFP] Gagal:', err);
-        }
-    }
-
-    initHoverSound();
-
-    // Fungsi play untuk PFP & About
-    function playHoverSoundSpesial() {
-        if (!hoverIsReady || !hoverAudioCtx || !hoverAudioBuffer) {
-            hoverPending.push(() => playHoverSoundSpesial());
-            return;
-        }
-
-        if (hoverAudioCtx.state === 'suspended') {
-            hoverAudioCtx.resume().then(() => {
-                const source = hoverAudioCtx.createBufferSource();
-                const gain = hoverAudioCtx.createGain();
-                gain.gain.value = 0.3;
-                source.buffer = hoverAudioBuffer;
-                source.connect(gain);
-                gain.connect(hoverAudioCtx.destination);
-                source.start(0);
-            }).catch(() => {});
-            return;
-        }
-
-        const source = hoverAudioCtx.createBufferSource();
-        const gain = hoverAudioCtx.createGain();
-        gain.gain.value = 0.3;
-        source.buffer = hoverAudioBuffer;
-        source.connect(gain);
-        gain.connect(hoverAudioCtx.destination);
-        source.start(0);
-    }
-
-    // === TARGET SPESIAL: PFP & ABOUT ===
-const targetElements = [
-    document.querySelector('.profile-wrapper') 
-    // .about-text sudah dihapus agar suara hover hilang
-];
-
-targetElements.forEach(el => {
-    if (!el) return;
-
-    // Hapus listener lama (kalau ada duplikat)
-    el.removeEventListener('mouseenter', playHoverSoundSpesial);
-    el.removeEventListener('mouseover', playHoverSoundSpesial);
-
-    // PAKAI mouseover (lebih responsif daripada mouseenter)
-    el.addEventListener('mouseover', function(e) {
-        // Pastikan targetnya benar (bukan anak elemen)
-        if (e.target.closest('.profile-wrapper')) {
-            playHoverSoundSpesial();
-        }
-    }, { passive: true });
-});
-
-    // === WARMUP: BIKIN CONTEXT LANGSUNG ACTIVE SAAT HOVER PERTAMA ===
-    function warmupContext() {
-        if (hoverAudioCtx && hoverAudioCtx.state === 'suspended') {
-            hoverAudioCtx.resume().catch(() => {});
-        }
-        while (hoverPending.length && hoverIsReady) {
-            const fn = hoverPending.shift();
-            fn();
-        }
-        document.removeEventListener('mousemove', warmupContext);
-        document.removeEventListener('click', warmupContext);
-        document.removeEventListener('touchstart', warmupContext);
-    }
-
-    document.addEventListener('mousemove', warmupContext, { passive: true, once: true });
-    document.addEventListener('click', warmupContext, { passive: true, once: true });
-    document.addEventListener('touchstart', warmupContext, { passive: true, once: true });
-});
-
-// =======================================================
-// FITUR KOMENTAR PENGUNJUNG (LIVE ADD)
-// =======================================================
 document.addEventListener('DOMContentLoaded', () => {
     const commentForm = document.getElementById('commentForm');
     const commentsList = document.getElementById('commentsList');
@@ -830,11 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = textInput.value.trim();
             
             if (name && text) {
-                // Buat elemen komentar baru
                 const commentCard = document.createElement('div');
                 commentCard.className = 'comment-card';
                 
-                // Tambahkan elemen HTML di dalamnya
                 commentCard.innerHTML = `
                     <div class="comment-avatar"><i class="fas fa-user-astronaut"></i></div>
                     <div class="comment-body">
@@ -844,28 +694,204 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 
-                // Masukkan komentar baru ke paling atas daftar
                 commentsList.insertBefore(commentCard, commentsList.firstChild);
-                
-                // Reset Input form
                 this.reset();
                 
-                // Ubah gaya tombol sebentar jadi sukses
                 const btn = this.querySelector('button');
                 const originalHTML = btn.innerHTML;
-                const originalClass = btn.className;
                 
                 btn.innerHTML = 'Komentar Terkirim! <i class="fas fa-check-circle"></i>';
                 btn.style.backgroundColor = '#4CAF50';
                 btn.style.color = '#fff';
                 btn.style.borderColor = '#4CAF50';
                 
-                // Balikkan tombol setelah 3 detik
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
                     btn.style = '';
                 }, 3000);
             }
         });
+    
+        // ======================================================================
+        // EFFECT PARTICLES LEAVES (RE-TUNED: ELEGANT, FEWER, LARGER & CINEMATIC)
+        // ======================================================================
+        (function () {
+            const canvasBack = document.getElementById('particleCanvas');
+            const canvasFront = document.getElementById('particleCanvasFront');
+            if (!canvasBack) return;
+
+            const ctxBack = canvasBack.getContext('2d');
+            const ctxFront = canvasFront ? canvasFront.getContext('2d') : null;
+
+            let backParticles = [];
+            let frontParticles = [];
+
+            function setAllCanvasSizes() {
+                canvasBack.width = window.innerWidth;
+                canvasBack.height = window.innerHeight;
+                if (canvasFront) {
+                    canvasFront.width = window.innerWidth;
+                    canvasFront.height = window.innerHeight;
+                }
+            }
+            setAllCanvasSizes();
+            window.addEventListener('resize', setAllCanvasSizes);
+
+            class Particle {
+                constructor(canvas, options) {
+                    this.canvas = canvas;
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+
+                    this.baseSize = options.baseSize || 10; 
+                    this.size = this.baseSize;
+                    
+                    const baseSpeed = (Math.random() * options.speedRange) + options.minSpeed;
+                    const randomAngle = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(randomAngle) * baseSpeed;
+                    this.vy = Math.sin(randomAngle) * baseSpeed;
+
+                    this.opacity = (Math.random() * options.opacityRange) + options.minOpacity;
+                    this.glow = options.glow || 0;
+                    this.noiseSeed = Math.random() * 100;
+
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spinSpeed = (Math.random() * 0.02 - 0.01);
+                }
+
+                update() {
+                    // 1. Gerakan melayang ambient biasa pas diam (super santai)
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.angle += this.spinSpeed;
+
+                    // 2. Respon Interaksi Kecepatan Scroll (Capped & Lembut)
+                    if (window.scrollVelocity) {
+                        const velocity = window.scrollVelocity;
+                        
+                        // BATASI kecepatan maksimal yang masuk ke perhitungan daun biar gak melesat hilang
+                        const cappedVelocity = Math.max(-2.5, Math.min(2.5, velocity));
+                        
+                        // Tarikan Parallax Vertikal dibuat jauh lebih anggun (di-nerf nilainya)
+                        const parallaxFactor = this.baseSize * 0.04; 
+                        this.y -= cappedVelocity * parallaxFactor;
+                        
+                        // Efek liukan horizontal tertiup angin juga diperhalus
+                        const swirlStrength = this.baseSize * 0.02;
+                        this.x += Math.sin(this.y * 0.005 + this.noiseSeed) * cappedVelocity * swirlStrength;
+                    }
+
+                    // Pembatas layar loop agar kembali masuk rapi
+                    const padding = this.size * 2 + 40;
+                    if (this.y < -padding) this.y = this.canvas.height + padding;
+                    if (this.y > this.canvas.height + padding) this.y = -padding;
+                    if (this.x < -padding) this.x = this.canvas.width + padding;
+                    if (this.x > this.canvas.width + padding) this.x = -padding;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    
+                    const velocity = window.scrollVelocity || 0;
+                    
+                    // Batasi efek kemiringan & stretch secara ketat agar daun tidak berubah jadi garis tipis
+                    const clampedVelocityForEffect = Math.max(-1.2, Math.min(1.2, velocity));
+                    const absVelocityForEffect = Math.abs(clampedVelocityForEffect);
+
+                    if (absVelocityForEffect > 0.02) {
+                        const windTilt = clampedVelocityForEffect * 0.15 + Math.sin(this.y * 0.005 + this.noiseSeed) * 0.2;
+                        ctx.rotate(this.angle + windTilt);
+                        
+                        // Stretch factor maksimal cuma melebar proporsional sedikit (~1.18x), daun tetap solid berbentuk daun!
+                        const stretchFactor = 1 + (absVelocityForEffect * 0.15); 
+                        ctx.scale(stretchFactor, 1 / Math.sqrt(stretchFactor));
+                    } else {
+                        ctx.rotate(this.angle);
+                    }
+
+                    if (this.glow > 0) {
+                        ctx.shadowBlur = this.glow;
+                        ctx.shadowColor = `rgba(255, 255, 255, ${this.opacity * 0.6})`;
+                    }
+
+                    // Bentuk Geometri Daun Premium yang Berbobot
+                    ctx.beginPath();
+                    ctx.moveTo(-this.size, 0); 
+                    ctx.quadraticCurveTo(0, -this.size * 0.48, this.size, 0); 
+                    ctx.quadraticCurveTo(0, this.size * 0.48, -this.size, 0);  
+                    
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // Daun Latar Belakang (DIPERDIKIT: Cuma 12, Anggun & Bersih)
+            function initBackParticles() {
+                backParticles = [];
+                const count = 12; 
+                for (let i = 0; i < count; i++) {
+                    backParticles.push(new Particle(canvasBack, {
+                        baseSize: Math.random() * 4 + 7, // 7px - 11px
+                        speedRange: 0.2,
+                        minSpeed: 0.05,
+                        opacityRange: 0.15,
+                        minOpacity: 0.1,
+                        glow: 0
+                    }));
+                }
+            }
+
+            // Daun Latar Depan (DIPERDIKIT & DIPERBESAR EKSTREM: Cuma 5 Biji, Kelihatan Mewah)
+            function initFrontParticles() {
+                frontParticles = [];
+                if (!canvasFront) return;
+                const count = 5; 
+                for (let i = 0; i < count; i++) {
+                    frontParticles.push(new Particle(canvasFront, {
+                        baseSize: Math.random() * 10 + 16, // Ukuran di-boost besar biar keliatan enak (16px - 26px)
+                        speedRange: 0.15,
+                        minSpeed: 0.04,
+                        opacityRange: 0.25,
+                        minOpacity: 0.2,
+                        glow: 12 // Efek glow premium di depan hero section
+                    }));
+                }
+            }
+            
+            initBackParticles();
+            initFrontParticles();
+
+            function animateParticles() {
+                // LOGIK SMOOTHING VELOCITY (Meredam hentakan scroll kasar)
+                const target = window.targetVelocity || 0;
+                const current = window.currentVelocity || 0;
+                
+                const lerpFactor = Math.abs(target) > Math.abs(current) ? 0.15 : 0.04;
+                window.currentVelocity += (target - current) * lerpFactor;
+                window.scrollVelocity = window.currentVelocity;
+
+                window.targetVelocity *= 0.92; // Redam target secara perlahan
+
+                ctxBack.clearRect(0, 0, canvasBack.width, canvasBack.height);
+                if (ctxFront) {
+                    ctxFront.clearRect(0, 0, canvasFront.width, canvasFront.height);
+                }
+
+                for (let p of backParticles) {
+                    p.update();
+                    p.draw(ctxBack);
+                }
+
+                for (let p of frontParticles) {
+                    p.update();
+                    p.draw(ctxFront);
+                }
+
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        })();
     }
 });

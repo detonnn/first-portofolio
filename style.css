@@ -1955,3 +1955,25 @@ body {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Particle Background Styles */
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Di belakang konten utama, tapi di depan/belakang blobs sesuai selera */
+    pointer-events: none; /* Supaya text dan tombol tetap bisa diklik */
+}
+
+/* Partikel Foreground: melayang DI DEPAN kolom teks & foto profil di hero */
+#particleCanvasFront {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5; /* Melayang di depan semua konten section, tapi di bawah navbar (1000+) */
+    pointer-events: none; /* Tetap transparan terhadap klik/hover di bawahnya */
+}
