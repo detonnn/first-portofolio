@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
 const loader = document.getElementById('loader');
 const enterBtn = document.getElementById('enterBtn');
 
+// Flag global: true setelah user klik Enter. Sebelum ini, TIDAK ADA sound apapun
+// yang boleh keluar (musik, tick counter, dst) kecuali swiperSound di judul loader.
+let siteEntered = false;
+
 // Inisialisasi Sound Effect Swiper dengan settingan audio performa tinggi
 const swiperSound = new Audio();
 swiperSound.src = 'swiper.MP3';
@@ -160,7 +164,7 @@ function hideLoader() {
             setTimeout(() => {
                 hero.style.opacity = '1';
                 hero.style.transform = 'translateY(0)';
-            }, 400);
+            }, 900);
         }
     }
 
@@ -168,6 +172,12 @@ function hideLoader() {
     enterBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
+
+        // Tandai user sudah masuk ke situs, baru dari sini sound lain boleh keluar
+        siteEntered = true;
+
+        // Mainkan sound enter.MP3 begitu tombol Enter ditekan
+        new Audio('enter.MP3').play().catch(err => console.log('[AUDIO] Enter sound error:', err));
 
         // 1. Jalankan suara swiper bawaan loader
         if (isAudioUnlocked) {
@@ -388,6 +398,7 @@ function hideLoader() {
     // 8. COUNTER ANIMATION
     // ================================================================
     function animateCounters() {
+        if (!siteEntered) return; // jangan bunyi sebelum user masuk situs
         const counters = document.querySelectorAll('.stat-number');
         const tickSound = document.getElementById('tickSound');
         if (tickSound) tickSound.volume = 0.2;
@@ -561,13 +572,18 @@ function hideLoader() {
     if (bgMusic && musicToggle && volumeSlider) {
         bgMusic.volume = volumeSlider.value;
         
-        // HAPUS ATAU JANGAN GUNAKAN startMusicOnInteraction di sini 
-        // agar mouse bergerak di loader tidak membocorkan lagu duluan.
+        // FIX: dulu `musicUnlocked` tidak pernah di-declare, jadi flag ini gagal
+        // ke-set true dan listener di bawah TERUS memanggil bgMusic.play()
+        // setiap kali user klik/scroll/gerak mouse -> itu sebabnya lagu tidak
+        // bisa di-pause dari player kiri (auto-play lagi begitu ada interaksi).
+        let musicUnlocked = false;
         const startMusicOnInteraction = () => {
-            if (typeof musicUnlocked !== 'undefined' && musicUnlocked) return;
-            if (!bgMusic) return;
+            if (!siteEntered || musicUnlocked || !bgMusic) return; // diam sebelum Enter
             bgMusic.play().then(() => {
-                if (typeof musicUnlocked !== 'undefined') musicUnlocked = true;
+                musicUnlocked = true;
+                // Setelah berhasil unlock sekali, lepas semua listener supaya
+                // interaksi berikutnya (termasuk klik pause) tidak memicu play lagi.
+                unlockEvents.forEach(evt => document.removeEventListener(evt, startMusicOnInteraction));
             }).catch(() => {});
         };
         const unlockEvents = ['click', 'mousemove', 'scroll', 'touchstart', 'keydown'];
