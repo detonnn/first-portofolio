@@ -21,8 +21,54 @@ function App() {
 
       let isAudioUnlocked = false;
 
+      // --- AUDIO CONTEXT UTK TOMBOL ENTER (ANTI-DELAY) ---
+      let enterAudioCtx = null;
+      let enterAudioBuffer = null;
+      let isEnterAudioReady = false;
+
+      async function preloadEnterHoverSound() {
+          try {
+              enterAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const response = await fetch('/swiper.MP3');
+              const arrayBuffer = await response.arrayBuffer();
+              enterAudioBuffer = await enterAudioCtx.decodeAudioData(arrayBuffer);
+              isEnterAudioReady = true;
+              console.log('[AUDIO ENTER] Buffer siap, anti-delay aktif!');
+          } catch (err) {
+              console.warn('[AUDIO ENTER] Gagal preload:', err);
+          }
+      }
+      // Jalankan preload langsung di awal
+      preloadEnterHoverSound();
+
+      function playEnterHoverSound() {
+          if (!isEnterAudioReady || !enterAudioCtx || !enterAudioBuffer) return;
+          
+          if (enterAudioCtx.state === 'suspended') {
+              enterAudioCtx.resume().then(executeEnterPlay).catch(() => {});
+              return;
+          }
+          executeEnterPlay();
+      }
+
+      function executeEnterPlay() {
+          if (!enterAudioCtx || enterAudioCtx.state !== 'running') return;
+          const source = enterAudioCtx.createBufferSource();
+          const gain = enterAudioCtx.createGain();
+          gain.gain.value = 0.5; // Atur volume suara hover teks di sini (0.0 s/d 1.0)
+          source.buffer = enterAudioBuffer;
+          source.connect(gain);
+          gain.connect(enterAudioCtx.destination);
+          source.start(0);
+      }
+
       function unlockAudioContext() {
           if (isAudioUnlocked) return;
+          
+          // Resume kontek audio enter jika statusnya tertahan browser
+          if (enterAudioCtx && enterAudioCtx.state === 'suspended') {
+              enterAudioCtx.resume();
+          }
           
           swiperSound.play()
               .then(() => {
@@ -41,7 +87,7 @@ function App() {
               });
       }
 
-      // Tangkap interaksi pertama user apa saja (gerak mouse, klik, atau sentuh layar) untuk unlock audio
+      // Tangkap interaksi pertama user apa saja untuk unlock audio
       window.addEventListener('click', unlockAudioContext);
       window.addEventListener('mousemove', unlockAudioContext, { once: true });
       window.addEventListener('touchstart', unlockAudioContext);
@@ -61,9 +107,8 @@ function App() {
               // Munculkan tombol Enter dengan animasi fade-in
               if (enterBtn) enterBtn.classList.add('show-enter');
 
-              // Mainkan sound effect (Aman dari delay karena sudah di-load dan di-unlock di awal)
-              swiperSound.currentTime = 0; 
-              swiperSound.play().catch(err => console.log('[AUDIO] Gagal putar karena aturan browser:', err));
+              // Mainkan sound effect secara instan lewat Web Audio API Buffer (ANTI DELAY)
+              playEnterHoverSound();
 
               const shardData = [];
               spans.forEach((span, index) => {
@@ -300,7 +345,6 @@ function App() {
       // 3B. CURSOR FOLLOWER SETTINGS (toggle on/off & ganti model gif)
       // ================================================================
       (function() {
-          // Tambahin model baru di sini kalo mau nambah pilihan gif
           const CF_MODELS = [
               { id: 'money', name: 'Money', src: '/money-cash.gif' },
               { id: 'jellyfish', name: 'Jellyfish', src: '/jellyfish.gif' },
@@ -464,7 +508,7 @@ function App() {
       // 8. COUNTER ANIMATION
       // ================================================================
       function animateCounters() {
-          if (!siteEntered) return; // jangan bunyi sebelum user masuk situs
+          if (!siteEntered) return;
           const counters = document.querySelectorAll('.stat-number');
           const tickSound = document.getElementById('tickSound');
           if (tickSound) tickSound.volume = 0.2;
@@ -1072,8 +1116,6 @@ function App() {
 
   return (
     <>
-      {/* Background Ferrofluid dihapus, ga cocok sama tema web */}
-
       <canvas id="particleCanvas"></canvas>
       <canvas id="particleCanvasFront"></canvas>
 
@@ -1184,7 +1226,7 @@ function App() {
           <div className="about-content">
             <div className="about-text">
               <h3>amateur nya tangerang</h3>
-              <p>Saya Ibnu Dexton, lulusan SMKN 5 Kota Tangerang dengan jurusan Desain Komunikasi Visual. Dengan passion dalam menciptakan desain yang bermakna, saya telah bekerja dengan berbagai klien dari berbagai industri.</p>
+              <p>Saya Ibnu Dexton, lulusan SMKN 5 Kota Tangerang dengan jurusan Desain Komunikasi Visual. Dengan passion dalam menciptakan desain yang bermakna, saya telah bekerja dengan berbagai klien dari berbagai industries.</p>
               <p>Pendekatan saya adalah menggabungkan estetika modern dengan fungsi yang jelas, memastikan setiap proyek tidak hanya terlihat indah tetapi juga efektif dalam menyampaikan pesan.</p>
               <div className="about-stats">
                 <div className="stat">
@@ -1470,7 +1512,7 @@ function App() {
             <li data-src="/pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="/nop.jpg">no pole - Don Toliver</li>
             <li data-src="/ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="/r34.jpg">bye - ariana grande</li>
             <li data-src="/legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="/lega.jpg">legacy slowed - PIXY</li>
-            <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый минимум - SABI</li>
+            <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый minimum - SABI</li>
             <li data-src="/mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="/mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
             <li data-src="/ask.mp3" data-title="Akatsuki Theme" data-artist="akatsuki" data-cover="/akatsuki.jpg">Akatsuki Theme - akatsuki</li>
             <li data-src="/orochi.mp3" data-title="orochimaru theme" data-artist="orochimaru" data-cover="/manga.jpg">orochimaru theme - orochimaru</li>
