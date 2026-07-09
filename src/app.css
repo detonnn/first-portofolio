@@ -20,7 +20,7 @@
 }
 
 html {
-    scroll-behavior: initial;
+    scroll-behavior: smooth;
     overflow-x: hidden;
     max-width: 100%;
 }
@@ -51,7 +51,7 @@ html.lenis, html.lenis body {
 body {
     font-family: 'Poppins', sans-serif;
     color: var(--text);
-    background: var(--dark) url("mesh-227.png") no-repeat center center fixed;
+    background: var(--dark) url("/mesh-227.png") no-repeat center center fixed;
     background-size: cover;
     overflow-x: hidden;
     position: relative;

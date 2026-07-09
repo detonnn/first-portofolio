@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Lenis from '@studio-freight/lenis';
 import './app.css';
 
 function App() {
@@ -14,7 +15,7 @@ function App() {
       let siteEntered = false;
 
       const swiperSound = new Audio();
-      swiperSound.src = 'swiper.MP3';
+      swiperSound.src = '/swiper.MP3';
       swiperSound.preload = 'auto';
       swiperSound.load(); // Paksa Brave untuk langsung download file audio di awal
 
@@ -163,7 +164,7 @@ function App() {
               siteEntered = true;
 
               // Mainkan sound enter.MP3 begitu tombol Enter ditekan
-              new Audio('enter.MP3').play().catch(err => console.log('[AUDIO] Enter sound error:', err));
+              new Audio('/enter.MP3').play().catch(err => console.log('[AUDIO] Enter sound error:', err));
 
               // 2. KUNCI UTAMA: Putar musik utama SEGERA tanpa delay saat klik enter
               if (typeof startMusicAfterEnter === 'function') {
@@ -343,7 +344,7 @@ function App() {
               e.preventDefault();
               const btn = this.querySelector('button');
               const originalText = btn.textContent;
-              btn.textContent = 'Terkirim! ✅';
+              btn.textContent = 'Terkirim!';
               btn.style.background = '#4CAF50';
               btn.style.boxShadow = 'none';
               setTimeout(() => {
@@ -682,7 +683,7 @@ function App() {
               const src = item.getAttribute('data-src');
               const title = item.getAttribute('data-title') || 'Unknown Title';
               const artist = item.getAttribute('data-artist') || 'Unknown Artist';
-              const cover = item.getAttribute('data-cover') || 'default-cover.jpg';
+              const cover = item.getAttribute('data-cover') || '/default-cover.jpg';
 
               playlistItems.forEach(li => li.classList.remove('active'));
               item.classList.add('active');
@@ -993,7 +994,7 @@ function App() {
       <canvas id="particleCanvasFront"></canvas>
 
       <div className="cursor-follower">
-        <img src="money-cash.gif" alt="Cursor Follower" />
+        <img src="/money-cash.gif" alt="Cursor Follower" />
       </div>
       
       <div className="bg-blobs">
@@ -1017,7 +1018,7 @@ function App() {
       {/* Navigation */}
       <nav className="navbar">
         <div className="nav-container">
-          <img src="16bit-80s.gif" alt="Walking Cat" className="nav-cat-walking" id="navCat" />
+          <img src="/16bit-80s.gif" alt="Walking Cat" className="nav-cat-walking" id="navCat" />
 
           <div className="nav-logo" data-aos="fade-right">
             <span>Ibnu dexton</span>
@@ -1062,7 +1063,7 @@ function App() {
             {/* === KOTAK FOTO PROFIL (SISI KANAN) === */}
             <div className="hero-image">
               <div className="profile-wrapper">
-                <img src="newpfp.png" alt="Ibnu Dexton" className="profile-img" id="profile-img" />
+                <img src="/newpfp.png" alt="Ibnu Dexton" className="profile-img" id="profile-img" />
                 <div className="profile-ring"></div>
               </div>
             </div>
@@ -1102,13 +1103,13 @@ function App() {
               </div>
             </div>
             <div className="about-image">
-              <img src="black-cat.gif" alt="Black Cat" className="about-cat-gif" />
+              <img src="/black-cat.gif" alt="Black Cat" className="about-cat-gif" />
               <div className="about-img-wrapper">
-                <img src="GARUDA PS 2026.jpg" alt="About Ibnu" />
+                <img src="/GARUDA PS 2026.jpg" alt="About Ibnu" />
               </div>
             </div>
           </div>
-          <audio id="tickSound" src="counting.MP3" preload="auto"></audio>
+          <audio id="tickSound" src="/counting.MP3" preload="auto"></audio>
         </div>
       </section>
 
@@ -1317,7 +1318,7 @@ function App() {
       </footer>
 
       {/* AUDIO SOUNDTRACK */}
-      <audio id="bgMusic" src="clai_obscur.mp3" preload="auto" />
+      <audio id="bgMusic" src="/clai_obscur.mp3" preload="auto" />
 
       {/* TOMBOL MUSIK (KANAN BAWAH) */}
       <div className="music-controller">
@@ -1334,7 +1335,7 @@ function App() {
       <div className="left-music-player" id="leftMusicPlayer">
         <div className="now-playing-card" id="leftPlayerPanel">
           <div className="np-cover-wrapper">
-            <img id="npCoverImg" src="default-cover.jpg" alt="Cover Art" />
+            <img id="npCoverImg" src="/default-cover.jpg" alt="Cover Art" />
           </div>
 
           <div className="np-header">
@@ -1365,15 +1366,15 @@ function App() {
           </div>
 
           <ul id="musicPlaylist" className="np-playlist" data-lenis-prevent>
-            <li data-src="neymar.mp3" data-title="TAKA LA DENTRO" data-artist="unique vibes" data-cover="brazil.jpg">TAKA LA DENTRO - unique vibes</li>
-            <li data-src="pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="nop.jpg">no pole - Don Toliver</li>
-            <li data-src="ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="r34.jpg">bye - ariana grande</li>
-            <li data-src="legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="lega.jpg">legacy slowed - PIXY</li>
-            <li data-src="russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="Thumbnailrus.jpg">Базовый минимум - SABI</li>
-            <li data-src="mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
-            <li data-src="naruto.mp3" data-title="i have seen much" data-artist="obito uciha" data-cover="obito.jpg">i have seen much - obito uciha</li>
-            <li data-src="cow.mp3" data-title="crash of world" data-artist="red dead redemption 2" data-cover="arthur.jpg">crash of world - red dead redemption 2</li>
-            <li data-src="clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
+            <li data-src="/neymar.mp3" data-title="TAKA LA DENTRO" data-artist="unique vibes" data-cover="/brazil.jpg">TAKA LA DENTRO - unique vibes</li>
+            <li data-src="/pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="/nop.jpg">no pole - Don Toliver</li>
+            <li data-src="/ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="/r34.jpg">bye - ariana grande</li>
+            <li data-src="/legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="/lega.jpg">legacy slowed - PIXY</li>
+            <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый минимум - SABI</li>
+            <li data-src="/mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="/mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
+            <li data-src="/naruto.mp3" data-title="i have seen much" data-artist="obito uciha" data-cover="/obito.jpg">i have seen much - obito uciha</li>
+            <li data-src="/cow.mp3" data-title="crash of world" data-artist="red dead redemption 2" data-cover="/arthur.jpg">crash of world - red dead redemption 2</li>
+            <li data-src="/clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="/Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
           </ul>
         </div>
 
@@ -1382,7 +1383,7 @@ function App() {
         </button>
       </div>
 
-      <audio id="hoverSound" src="hov.MP3" preload="auto" />
+      <audio id="hoverSound" src="/hov.MP3" preload="auto" />
     </>
   );
 }
