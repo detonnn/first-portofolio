@@ -1,16 +1,38 @@
-# React + Vite
+# 🌐 My First Personal Portfolio Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Selamat datang di repository web portofolio pertama saya! Project ini dibuat sebagai wadah untuk menampilkan profil, keahlian, pengalaman freelance, serta project-project yang telah saya kerjakan di bidang UI/UX design, graphic design, dan web development.
 
-Currently, two official plugins are available:
+✨ **Live Preview:** [muhammad-ibnu.vercel.app](https://muhammad-ibnu.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🚀 Fitur Utama
+- **Responsive Design:** Tampilan web yang optimal di berbagai perangkat, mulai dari smartphone, tablet, hingga desktop.
+- **Project Showcase:** Galeri interaktif untuk menampilkan karya terbaik saya (Desain Banner, Website UI, Video Editing, dll).
+- **Clean & Modern UI:** Desain antarmuka yang bersih dengan estetika modern agar nyaman dilihat oleh pengunjung atau calon klien.
+- **Contact Form / Links:** Memudahkan pengunjung untuk terhubung langsung dengan saya melalui email atau media sosial.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack & Tools
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### **Web Development**
+- **Framework/Library:** [Sebutkan teknologi yang kamu pakai, contoh: HTML5, CSS3, JavaScript / React.js / Next.js]
+- **Deployment:** [Vercel](https://vercel.com/)
+
+### **Design & Multimedia**
+- **UI/UX & Web Design:** Adobe Photoshop / Figma / Canva
+- **Graphic Design:** Adobe Illustrator (Vector modification, Banner, Poster)
+- **Video Production:** CapCut PC (Video Editing & Thumbnail creation)
+
+---
+
+## 📁 Struktur Folder (Opsional)
+```text
+├── public/          # Asset gambar, icon, dan favicon
+├── src/
+│   ├── components/  # Komponen UI yang reusable
+│   ├── styles/      # File styling (CSS/Tailwind)
+│   └── views/       # Halaman utama website
+├── package.json     # Konfigurasi project & dependencies
+└── README.md        # Dokumentasi ini
