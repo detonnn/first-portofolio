@@ -824,6 +824,128 @@ body {
     width: 75% !important;
 }
 
+/* ================================================================
+   TECH STACK SECTION
+   ================================================================ */
+.techstack {
+    padding: 100px 0;
+    background: transparent;
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 24px;
+}
+
+.tech-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 22px 20px 24px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.tech-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.tech-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tech-card:hover::before {
+    opacity: 1;
+}
+
+.tech-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tech-category {
+    font-weight: 600;
+    color: var(--primary-dark);
+    opacity: 0.85;
+}
+
+.tech-version {
+    color: var(--text-muted);
+    font-family: 'Courier New', monospace;
+    opacity: 0.7;
+}
+
+/* Subtle accent colors per category, echoing the reference badges
+   while staying inside the site's monochrome glass palette */
+.tag-frontend   { color: #7dd3fc; }
+.tag-framework  { color: #c4b5fd; }
+.tag-language   { color: #fde047; }
+.tag-uilib      { color: #67e8f9; }
+.tag-backend    { color: #fca5a5; }
+.tag-database   { color: #86efac; }
+.tag-baas       { color: #fdba74; }
+.tag-mobile     { color: #93c5fd; }
+.tag-core       { color: #d9f99d; }
+
+.tech-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease;
+}
+
+.tech-icon img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    filter: grayscale(1) brightness(1.6) drop-shadow(0 0 12px rgba(255, 255, 255, 0.15));
+    transition: filter 0.4s ease;
+}
+
+.tech-card:hover .tech-icon {
+    transform: scale(1.15) rotate(-4deg);
+}
+
+.tech-card:hover .tech-icon img {
+    filter: grayscale(0) brightness(1) drop-shadow(0 0 18px rgba(255, 255, 255, 0.5));
+}
+
+.tech-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    padding-top: 14px;
+    border-top: 1px solid var(--glass-border);
+}
+
+@media (max-width: 480px) {
+    .tech-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 .projects {
     padding: 100px 0;
     background: transparent;
@@ -1129,62 +1251,66 @@ body {
 }
 
 /* Scroll Animations */
+/* Section pembungkus cuma fade opacity aja — gerakan naik/turunnya udah
+   ditangani per-kartu di bawah, biar ga numpuk 2 animasi transform sekaligus
+   yang bikin munculnya kartu jadi patah-patah pas discroll. */
 .reveal-init {
     opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1),
-                transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal-init.revealed {
     opacity: 1;
+}
+
+/* Header section (judul + underline) tetap dapat sedikit rise, karena dia
+   cuma 1 elemen jadi ga akan bentrok sama animasi grid di bawahnya */
+.reveal-init .section-header {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-init.revealed .section-header {
+    opacity: 1;
     transform: translateY(0);
 }
 
-/* Staggered Animations for Grid Items */
-.reveal-init.revealed .project-card-link {
-    animation: fadeInUpStagger 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-.reveal-init.revealed .project-card-link:nth-child(1) { animation-delay: 0.1s; }
-.reveal-init.revealed .project-card-link:nth-child(2) { animation-delay: 0.2s; }
-.reveal-init.revealed .project-card-link:nth-child(3) { animation-delay: 0.3s; }
-.reveal-init.revealed .project-card-link:nth-child(4) { animation-delay: 0.4s; }
-.reveal-init.revealed .project-card-link:nth-child(5) { animation-delay: 0.5s; }
-.reveal-init.revealed .project-card-link:nth-child(6) { animation-delay: 0.6s; }
-
-.reveal-init.revealed .skill-card {
-    animation: fadeInUpStagger 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-.reveal-init.revealed .skill-card:nth-child(1) { animation-delay: 0.1s; }
-.reveal-init.revealed .skill-card:nth-child(2) { animation-delay: 0.2s; }
-.reveal-init.revealed .skill-card:nth-child(3) { animation-delay: 0.3s; }
-.reveal-init.revealed .skill-card:nth-child(4) { animation-delay: 0.4s; }
-
-.reveal-init.revealed .client-card {
-    animation: fadeInUpStagger 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-.reveal-init.revealed .client-card:nth-child(1) { animation-delay: 0.1s; }
-.reveal-init.revealed .client-card:nth-child(2) { animation-delay: 0.2s; }
-.reveal-init.revealed .client-card:nth-child(3) { animation-delay: 0.3s; }
-.reveal-init.revealed .client-card:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes fadeInUpStagger {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Skill cards and project cards init state when parent is not revealed */
-.reveal-init:not(.revealed) .project-card-link,
-.reveal-init:not(.revealed) .skill-card,
-.reveal-init:not(.revealed) .client-card {
+/* Reveal per-kartu (proyek, skill, tech, client) — tiap elemen punya
+   IntersectionObserver sendiri (lihat App.jsx), jadi munculnya kartu
+   ngikutin posisi scroll masing-masing, bukan meledak bareng cuma
+   gara-gara section induknya kesentuh threshold sekali. --reveal-delay
+   di-set lewat inline style dari JS buat stagger yang halus & terbatas. */
+.project-card-link,
+.skill-card,
+.client-card,
+.tech-card {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0s);
+    will-change: opacity, transform;
+}
+
+.project-card-link.in-view,
+.skill-card.in-view,
+.client-card.in-view,
+.tech-card.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-init,
+    .reveal-init .section-header,
+    .project-card-link,
+    .skill-card,
+    .client-card,
+    .tech-card {
+        transition-duration: 0.01ms !important;
+        transform: none !important;
+    }
 }
 
 /* Responsive */

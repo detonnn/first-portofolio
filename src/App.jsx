@@ -495,14 +495,46 @@ function App() {
                   if (entry.target.id === 'about') {
                       animateCounters();
                   }
+                  // Cukup sekali reveal, ga perlu dipantau terus
+                  revealObserver.unobserve(entry.target);
               }
           });
-      }, { threshold: 0.15 });
+      }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
 
       sections.forEach(section => {
           section.classList.add('reveal-init');
           revealObserver.observe(section);
       });
+
+      // --- REVEAL PER-KARTU (proyek, skill, tech, client) ---
+      // Sebelumnya semua kartu ikut "meledak" bareng begitu section induknya
+      // kesentuh threshold sekali, jadi kalau user scroll cepat, kartu yang
+      // sebenarnya udah kelihatan jadi ikut pop dari opacity 0 -> keliatan
+      // patah-patah. Sekarang tiap kartu punya observer sendiri, jadi dia
+      // muncul persis pas dia sendiri masuk viewport, dengan stagger halus
+      // yang dibatasi (max 0.4s) biar ga kelamaan nunggu pas grid-nya panjang.
+      const GRID_ITEM_SELECTOR = '.project-card-link, .skill-card, .client-card, .tech-card';
+      const gridItems = document.querySelectorAll(GRID_ITEM_SELECTOR);
+
+      const staggerCountByParent = new Map();
+      gridItems.forEach((item) => {
+          const parent = item.parentElement;
+          const count = staggerCountByParent.get(parent) || 0;
+          const delay = Math.min(count * 0.08, 0.4);
+          item.style.setProperty('--reveal-delay', `${delay}s`);
+          staggerCountByParent.set(parent, count + 1);
+      });
+
+      const gridItemObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                  entry.target.classList.add('in-view');
+                  gridItemObserver.unobserve(entry.target);
+              }
+          });
+      }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
+
+      gridItems.forEach(item => gridItemObserver.observe(item));
 
       // ================================================================
       // 8. COUNTER ANIMATION
@@ -644,7 +676,7 @@ function App() {
           }
 
           const HOVER_SELECTORS = [
-              '.skill-card', '.project-card', '.hero-buttons .btn',
+              '.skill-card', '.tech-card', '.project-card', '.hero-buttons .btn',
               '.hero-social a', '.profile-wrapper'
           ].join(', ');
 
@@ -1168,6 +1200,7 @@ function App() {
             <li><a href="#home" className="active">Home</a></li>
             <li><a href="#about">Tentang</a></li>
             <li><a href="#skills">Keahlian</a></li>
+            <li><a href="#techstack">Tech Stack</a></li>
             <li><a href="#projects">Proyek</a></li>
             <li><a href="#contact">Kontak</a></li>
             <div className="nav-indicator"></div>
@@ -1285,6 +1318,107 @@ function App() {
               <h3>Frontend Dev</h3>
               <p>Membangun website responsif dengan HTML, CSS, dan JavaScript.</p>
               <div className="skill-bar"><div className="skill-progress" style={{ width: '75%' }}></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section id="techstack" className="techstack">
+        <div className="container">
+          <div className="section-header">
+            <h2>Tech Stack</h2>
+            <div className="underline"></div>
+          </div>
+          <div className="tech-grid">
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-frontend">Frontend</span>
+                <span className="tech-version">v18.2</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" loading="lazy" /></div>
+              <h3>React</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-framework">Framework</span>
+                <span className="tech-version">v14.0</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/nextdotjs/ffffff" alt="Next.js" loading="lazy" /></div>
+              <h3>Next.js</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-language">Language</span>
+                <span className="tech-version">ES6+</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="JavaScript" loading="lazy" /></div>
+              <h3>JavaScript</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-uilib">UI Lib</span>
+                <span className="tech-version">v3.4</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/tailwindcss/38BDF8" alt="Tailwind CSS" loading="lazy" /></div>
+              <h3>Tailwind</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-language">Language</span>
+                <span className="tech-version">v8.2</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/php/8892BF" alt="PHP" loading="lazy" /></div>
+              <h3>PHP</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-backend">Backend</span>
+                <span className="tech-version">v10.0</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/laravel/FF2D20" alt="Laravel" loading="lazy" /></div>
+              <h3>Laravel</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-database">Database</span>
+                <span className="tech-version">v8.0</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" loading="lazy" /></div>
+              <h3>MySQL</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-baas">BaaS</span>
+                <span className="tech-version">Latest</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/firebase/FFCA28" alt="Firebase" loading="lazy" /></div>
+              <h3>Firebase</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-mobile">Mobile</span>
+                <span className="tech-version">v3.19</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/flutter/02569B" alt="Flutter" loading="lazy" /></div>
+              <h3>Flutter</h3>
+            </div>
+
+            <div className="tech-card">
+              <div className="tech-card-top">
+                <span className="tech-category tag-core">Core</span>
+                <span className="tech-version">v3.0</span>
+              </div>
+              <div className="tech-icon"><img src="https://cdn.simpleicons.org/dart/0175C2" alt="Dart" loading="lazy" /></div>
+              <h3>Dart</h3>
             </div>
           </div>
         </div>
