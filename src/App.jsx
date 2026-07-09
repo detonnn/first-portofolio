@@ -1365,9 +1365,12 @@ function App() {
           </div>
 
           <ul id="musicPlaylist" className="np-playlist" data-lenis-prevent>
+            <li data-src="neymar.mp3" data-title="TAKA LA DENTRO" data-artist="unique vibes" data-cover="brazil.jpg">TAKA LA DENTRO - unique vibes</li>
             <li data-src="pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="nop.jpg">no pole - Don Toliver</li>
             <li data-src="ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="r34.jpg">bye - ariana grande</li>
-            <li data-src="russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="Thumbnailrus.jpg">Баzoвый минимум</li>
+            <li data-src="legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="lega.jpg">legacy slowed - PIXY</li>
+            <li data-src="russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="Thumbnailrus.jpg">Базовый минимум - SABI</li>
+            <li data-src="mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
             <li data-src="naruto.mp3" data-title="i have seen much" data-artist="obito uciha" data-cover="obito.jpg">i have seen much - obito uciha</li>
             <li data-src="cow.mp3" data-title="crash of world" data-artist="red dead redemption 2" data-cover="arthur.jpg">crash of world - red dead redemption 2</li>
             <li data-src="clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
