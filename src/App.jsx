@@ -58,6 +58,9 @@ function App() {
           const spans = loaderTitle.querySelectorAll('span');
 
           loaderTitle.addEventListener('mouseenter', () => {
+              // Munculkan tombol Enter dengan animasi fade-in
+              if (enterBtn) enterBtn.classList.add('show-enter');
+
               // Mainkan sound effect (Aman dari delay karena sudah di-load dan di-unlock di awal)
               swiperSound.currentTime = 0; 
               swiperSound.play().catch(err => console.log('[AUDIO] Gagal putar karena aturan browser:', err));
@@ -145,6 +148,12 @@ function App() {
           loader.classList.add('hide');
           console.log('[LOADER] Tersembunyi!');
 
+          // BUKA KUNCI SCROLL: Aktifkan Lenis & hapus class lock di body saat masuk situs
+          if (window.lenis) {
+              window.lenis.start();
+          }
+          document.body.classList.remove('overflow-hidden');
+
           // Trigger animasi hero setelah loader hilang
           const hero = document.querySelector('.hero');
           if (hero) {
@@ -154,7 +163,7 @@ function App() {
               }, 900);
           }
       }
-
+      
       if (enterBtn) {
           enterBtn.addEventListener('click', function(e) {
               e.preventDefault();
@@ -205,6 +214,11 @@ function App() {
               });
 
               window.lenis = lenis;
+              
+              // KUNCI UTAMA: Stop scroll Lenis langsung di awal
+              lenis.stop();
+              document.body.classList.add('overflow-hidden'); // Tambah class lock ke body
+
               window.targetVelocity = 0;
               window.currentVelocity = 0;
               window.scrollVelocity = 0;
@@ -252,6 +266,9 @@ function App() {
       function updateCursor(e) {
           cursorX = e.clientX;
           cursorY = e.clientY;
+          if (cursorFollower && cursorFollower.style.opacity !== '1') {
+              cursorFollower.style.opacity = '1';
+          }
       }
 
       function animateFollower() {
@@ -278,6 +295,73 @@ function App() {
       } else {
           if (cursorFollower) cursorFollower.style.display = 'none';
       }
+
+      // ================================================================
+      // 3B. CURSOR FOLLOWER SETTINGS (toggle on/off & ganti model gif)
+      // ================================================================
+      (function() {
+          // Tambahin model baru di sini kalo mau nambah pilihan gif
+          const CF_MODELS = [
+              { id: 'money', name: 'Money', src: '/money-cash.gif' },
+              { id: 'jellyfish', name: 'Jellyfish', src: '/jellyfish.gif' },
+              { id: 'kriby', name: 'Kriby', src: '/kirby.gif' },
+          ];
+
+          const cfImg = document.getElementById('cursorFollowerImg');
+          const cfSettings = document.getElementById('cfSettings');
+          const cfBtn = document.getElementById('cfSettingsBtn');
+          const cfMenu = document.getElementById('cfSettingsMenu');
+          const cfToggleBtn = document.getElementById('cfToggleBtn');
+          const cfToggleLabel = document.getElementById('cfToggleLabel');
+          const cfModelList = document.getElementById('cfModelList');
+
+          if (!cfImg || !cfSettings) return;
+
+          let isOff = localStorage.getItem('cf_off') === '1';
+          let activeModel = localStorage.getItem('cf_model') || CF_MODELS[0].id;
+
+          function applyState() {
+              const model = CF_MODELS.find(m => m.id === activeModel) || CF_MODELS[0];
+              cfImg.src = model.src;
+              cursorFollower.style.display = isOff ? 'none' : 'block';
+              cfToggleLabel.textContent = isOff ? 'Nyalain' : 'Matiin';
+              cfToggleBtn.querySelector('i').className = isOff ? 'fas fa-eye-slash' : 'fas fa-eye';
+          }
+
+          function renderModelList() {
+              cfModelList.innerHTML = '';
+              CF_MODELS.forEach(m => {
+                  const item = document.createElement('button');
+                  item.className = 'cf-settings-item cf-model-item' + (m.id === activeModel ? ' active' : '');
+                  item.innerHTML = `<i class="fas fa-image"></i> ${m.name}` + (m.id === activeModel ? ' <i class="fas fa-check cf-check"></i>' : '');
+                  item.addEventListener('click', () => {
+                      activeModel = m.id;
+                      localStorage.setItem('cf_model', activeModel);
+                      applyState();
+                      renderModelList();
+                  });
+                  cfModelList.appendChild(item);
+              });
+          }
+
+          cfBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              cfSettings.classList.toggle('open');
+          });
+
+          document.addEventListener('click', (e) => {
+              if (!cfSettings.contains(e.target)) cfSettings.classList.remove('open');
+          });
+
+          cfToggleBtn.addEventListener('click', () => {
+              isOff = !isOff;
+              localStorage.setItem('cf_off', isOff ? '1' : '0');
+              applyState();
+          });
+
+          applyState();
+          renderModelList();
+      })();
 
       // ================================================================
       // 4. NAVBAR SCROLL EFFECT & TOGGLE
@@ -994,7 +1078,22 @@ function App() {
       <canvas id="particleCanvasFront"></canvas>
 
       <div className="cursor-follower">
-        <img src="/money-cash.gif" alt="Cursor Follower" />
+        <img src="/money-cash.gif" alt="Cursor Follower" id="cursorFollowerImg" />
+      </div>
+
+      {/* Cursor Follower Settings */}
+      <div className="cf-settings" id="cfSettings">
+        <button className="cf-settings-btn" id="cfSettingsBtn" aria-label="Pengaturan Cursor">
+          <i className="fas fa-gear"></i>
+        </button>
+        <div className="cf-settings-menu" id="cfSettingsMenu">
+          <button className="cf-settings-item" id="cfToggleBtn">
+            <i className="fas fa-eye"></i> <span id="cfToggleLabel">Matiin</span>
+          </button>
+          <div className="cf-settings-divider"></div>
+          <span className="cf-settings-title">Ganti Model</span>
+          <div id="cfModelList"></div>
+        </div>
       </div>
       
       <div className="bg-blobs">
@@ -1367,13 +1466,15 @@ function App() {
 
           <ul id="musicPlaylist" className="np-playlist" data-lenis-prevent>
             <li data-src="/neymar.mp3" data-title="TAKA LA DENTRO" data-artist="unique vibes" data-cover="/brazil.jpg">TAKA LA DENTRO - unique vibes</li>
+            <li data-src="/letada.mp3" data-title="ELA KÉ LEITADA" data-artist="dj nifour" data-cover="/neypildun.png">ELA KÉ LEITADA - dj nifour</li>
             <li data-src="/pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="/nop.jpg">no pole - Don Toliver</li>
             <li data-src="/ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="/r34.jpg">bye - ariana grande</li>
             <li data-src="/legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="/lega.jpg">legacy slowed - PIXY</li>
             <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый минимум - SABI</li>
             <li data-src="/mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="/mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
-            <li data-src="/naruto.mp3" data-title="i have seen much" data-artist="obito uciha" data-cover="/obito.jpg">i have seen much - obito uciha</li>
-            <li data-src="/cow.mp3" data-title="crash of world" data-artist="red dead redemption 2" data-cover="/arthur.jpg">crash of world - red dead redemption 2</li>
+            <li data-src="/ask.mp3" data-title="Akatsuki Theme" data-artist="akatsuki" data-cover="/akatsuki.jpg">Akatsuki Theme - akatsuki</li>
+            <li data-src="/orochi.mp3" data-title="orochimaru theme" data-artist="orochimaru" data-cover="/manga.jpg">orochimaru theme - orochimaru</li>
+            <li data-src="/konan.mp3" data-title="Girei (pain theme)" data-artist="naruto shippuden" data-cover="/pain.jpg">Girei (pain theme) - naruto shippuden</li>
             <li data-src="/clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="/Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
           </ul>
         </div>
