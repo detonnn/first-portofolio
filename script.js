@@ -145,12 +145,6 @@ if (loaderTitle) {
     }, { once: true });
 }
 
-// Handler untuk tombol ENTER? bawaan portfolio kamu
-if (enterBtn) {
-    enterBtn.addEventListener('click', () => {
-        if (loader) loader.classList.add('fade-out');
-    }, { once: true });
-}
 function hideLoader() {
     if (!loader) return;
     // ... sisa kode hideLoader kamu ...
@@ -178,11 +172,6 @@ function hideLoader() {
 
         // Mainkan sound enter.MP3 begitu tombol Enter ditekan
         new Audio('enter.MP3').play().catch(err => console.log('[AUDIO] Enter sound error:', err));
-
-        // 1. Jalankan suara swiper bawaan loader
-        if (isAudioUnlocked) {
-            swiperSound.play().catch(e => console.log("[AUDIO] Swiper error:", e));
-        }
 
         // 2. KUNCI UTAMA: Putar musik utama SEGERA tanpa delay saat klik enter
         if (typeof startMusicAfterEnter === 'function') {
