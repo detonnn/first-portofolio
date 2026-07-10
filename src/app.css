@@ -846,27 +846,46 @@ body {
     padding: 22px 20px 24px;
     border-radius: 20px;
     text-align: center;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
     box-shadow: var(--shadow);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    z-index: 1;
+}
+
+/* Saat salah satu kartu di-hover, kartu lain sedikit mengecil & meredup
+   supaya fokus jatuh ke kartu yang aktif tanpa berlebihan */
+.tech-grid:hover .tech-card {
+    transform: scale(0.94);
+    opacity: 0.55;
+}
+
+.tech-grid:hover .tech-card:hover {
+    opacity: 1;
 }
 
 .tech-card::before {
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: inherit;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 60%);
     opacity: 0;
     transition: opacity 0.4s ease;
     pointer-events: none;
 }
 
+.tech-card:hover,
+.tech-grid:hover .tech-card {
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+}
+
 .tech-card:hover {
-    transform: translateY(-10px);
+    transform: scale(1.08);
     border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 24px 48px rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 5;
 }
 
 .tech-card:hover::before {
@@ -925,7 +944,7 @@ body {
 }
 
 .tech-card:hover .tech-icon {
-    transform: scale(1.15) rotate(-4deg);
+    transform: scale(1.15);
 }
 
 .tech-card:hover .tech-icon img {
@@ -938,6 +957,39 @@ body {
     color: #ffffff;
     padding-top: 14px;
     border-top: 1px solid var(--glass-border);
+}
+
+/* Deskripsi tampil sebagai panel mengambang (position: absolute) di bawah
+   kartu — sengaja dikeluarkan dari alur normal grid supaya tinggi baris
+   TIDAK berubah saat hover, jadi kartu sebaris & section di bawahnya
+   (mis. Proyek Unggulan) tidak ikut tergeser sama sekali. */
+.tech-desc {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 100%;
+    margin-top: 10px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    background: rgba(15, 15, 20, 0.85);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 6;
+}
+
+.tech-card:hover .tech-desc {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 @media (max-width: 480px) {
@@ -971,8 +1023,17 @@ body {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: var(--shadow);
-    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Sebelumnya "transition: all" — itu bikin browser mantau SEMUA properti
+       (termasuk background, border-radius, dll) tiap kali parent-nya
+       (.project-card-link) di-fade sama reveal observer, padahal cuma
+       transform & box-shadow yang beneran butuh dianimasikan (pas hover).
+       Dipersempit biar ga ada kerjaan repaint nganggur pas kartu muncul. */
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
+    /* Isolasi area repaint blur-nya sendiri, biar animasi opacity di parent
+       ga nge-trigger repaint ke elemen lain di section proyek. */
+    contain: layout paint;
 }
 
 .project-card::before {
@@ -1257,6 +1318,7 @@ body {
 .reveal-init {
     opacity: 0;
     transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity;
 }
 
 .reveal-init.revealed {
@@ -1291,6 +1353,13 @@ body {
                 transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: var(--reveal-delay, 0s);
     will-change: opacity, transform;
+    /* Kasih layer compositing sendiri (GPU) biar animasi opacity/transform
+       ga ikut mancing browser buat repaint konten di dalamnya (terutama
+       .project-card yang punya backdrop-filter blur + gambar besar —
+       itu yang bikin kartu proyek kerasa lebih patah-patah dibanding
+       skill/tech/client card yang lebih ringan). */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .project-card-link.in-view,

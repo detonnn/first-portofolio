@@ -490,29 +490,21 @@ function App() {
       const sections = document.querySelectorAll('section');
       const revealObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                  entry.target.classList.add('revealed');
-                  if (entry.target.id === 'about') {
-                      animateCounters();
-                  }
-                  // Cukup sekali reveal, ga perlu dipantau terus
-                  revealObserver.unobserve(entry.target);
+              // Toggle 2 arah: section muncul lagi tiap kali masuk viewport,
+              // baik scroll ke bawah maupun ke atas, ga cuma sekali seumur hidup.
+              entry.target.classList.toggle('revealed', entry.isIntersecting);
+              if (entry.isIntersecting && entry.target.id === 'about') {
+                  animateCounters();
               }
           });
-      }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
+      }, { threshold: 0.1, rootMargin: '0px 0px -10% 0px' });
 
       sections.forEach(section => {
           section.classList.add('reveal-init');
           revealObserver.observe(section);
       });
 
-      // --- REVEAL PER-KARTU (proyek, skill, tech, client) ---
-      // Sebelumnya semua kartu ikut "meledak" bareng begitu section induknya
-      // kesentuh threshold sekali, jadi kalau user scroll cepat, kartu yang
-      // sebenarnya udah kelihatan jadi ikut pop dari opacity 0 -> keliatan
-      // patah-patah. Sekarang tiap kartu punya observer sendiri, jadi dia
-      // muncul persis pas dia sendiri masuk viewport, dengan stagger halus
-      // yang dibatasi (max 0.4s) biar ga kelamaan nunggu pas grid-nya panjang.
+
       const GRID_ITEM_SELECTOR = '.project-card-link, .skill-card, .client-card, .tech-card';
       const gridItems = document.querySelectorAll(GRID_ITEM_SELECTOR);
 
@@ -527,10 +519,9 @@ function App() {
 
       const gridItemObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                  entry.target.classList.add('in-view');
-                  gridItemObserver.unobserve(entry.target);
-              }
+              // Toggle 2 arah juga di level kartu, jadi tiap kartu pop-up lagi
+              // setiap kali dia masuk viewport dari arah mana pun.
+              entry.target.classList.toggle('in-view', entry.isIntersecting);
           });
       }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
 
@@ -1338,6 +1329,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" loading="lazy" /></div>
               <h3>React</h3>
+              <p className="tech-desc">Jadi tulang punggung hampir semua UI yang saya bangun—component-based, gampang di-reuse, dan enak dipadukan dengan state management ringan.</p>
             </div>
 
             <div className="tech-card">
@@ -1347,6 +1339,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/nextdotjs/ffffff" alt="Next.js" loading="lazy" /></div>
               <h3>Next.js</h3>
+              <p className="tech-desc">Andalan untuk proyek yang butuh performa lebih—SSR dan routing bawaannya bikin loading halaman terasa instan tanpa konfigurasi ribet.</p>
             </div>
 
             <div className="tech-card">
@@ -1356,6 +1349,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="JavaScript" loading="lazy" /></div>
               <h3>JavaScript</h3>
+              <p className="tech-desc">Bahasa yang paling sering saya sentuh tiap hari—dari logika interaktif kecil sampai integrasi API, selalu jadi lem penghubung antar teknologi lain.</p>
             </div>
 
             <div className="tech-card">
@@ -1365,6 +1359,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/tailwindcss/38BDF8" alt="Tailwind CSS" loading="lazy" /></div>
               <h3>Tailwind</h3>
+              <p className="tech-desc">Bikin proses styling jauh lebih cepat tanpa bolak-balik file CSS terpisah—utility class-nya cocok banget buat iterasi desain yang gesit.</p>
             </div>
 
             <div className="tech-card">
@@ -1374,6 +1369,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/php/8892BF" alt="PHP" loading="lazy" /></div>
               <h3>PHP</h3>
+              <p className="tech-desc">Fondasi logika server-side yang saya pakai sejak awal belajar backend—stabil, dokumentasinya luas, dan tetap relevan untuk banyak proyek nyata.</p>
             </div>
 
             <div className="tech-card">
@@ -1383,6 +1379,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/laravel/FF2D20" alt="Laravel" loading="lazy" /></div>
               <h3>Laravel</h3>
+              <p className="tech-desc">Framework favorit untuk merapikan struktur backend—Eloquent dan routing-nya bikin saya bisa fokus ke logika bisnis, bukan boilerplate.</p>
             </div>
 
             <div className="tech-card">
@@ -1392,6 +1389,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" loading="lazy" /></div>
               <h3>MySQL</h3>
+              <p className="tech-desc">Tempat saya menaruh kepercayaan untuk data yang butuh relasi jelas dan query yang terstruktur rapi di balik layar setiap aplikasi.</p>
             </div>
 
             <div className="tech-card">
@@ -1401,6 +1399,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/firebase/FFCA28" alt="Firebase" loading="lazy" /></div>
               <h3>Firebase</h3>
+              <p className="tech-desc">Solusi cepat saat proyek butuh autentikasi atau database real-time tanpa harus bangun server sendiri dari nol.</p>
             </div>
 
             <div className="tech-card">
@@ -1410,6 +1409,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/flutter/02569B" alt="Flutter" loading="lazy" /></div>
               <h3>Flutter</h3>
+              <p className="tech-desc">Pilihan saya untuk masuk ke dunia mobile—satu codebase bisa jalan di Android dan iOS, hemat waktu tanpa mengorbankan tampilan.</p>
             </div>
 
             <div className="tech-card">
@@ -1419,6 +1419,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/dart/0175C2" alt="Dart" loading="lazy" /></div>
               <h3>Dart</h3>
+              <p className="tech-desc">Bahasa di balik setiap widget Flutter yang saya susun—null safety-nya bikin aplikasi mobile lebih jarang crash saat runtime.</p>
             </div>
           </div>
         </div>
@@ -1428,15 +1429,15 @@ function App() {
       <section id="projects" className="projects">
         <div className="container">
           <div className="section-header">
-            <h2>Proyek Unggulan</h2>
+            <h2>Proyek Archive</h2>
             <div className="underline"></div>
           </div>
           <div className="projects-grid">
-            <a href="https://www.behance.net/gallery/142999433/SENADA-COFFEE-Identity-Packaging-Branding" target="_blank" rel="noopener noreferrer" className="project-card-link">
+            <a href="https://youtu.be/WwLDZrngERA?si=7YH2bM7CIWKf1YlC" target="_blank" rel="noopener noreferrer" className="project-card-link">
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80')" }}></div>
                 <div className="project-info">
-                  <h3>Brand Identity - Kopi Local Tangerang</h3>
+                  <h3>editing vlog evos esport</h3>
                   <p>Rebranding lengkap identitas visual kafe lokal Tangerang, meliputi logo, tipografi, kemasan cup, serta desain merchandise.</p>
                   <span className="project-tag tag-amber">Branding</span>
                   <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
