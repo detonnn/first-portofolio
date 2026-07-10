@@ -1189,11 +1189,11 @@ function App() {
           </div>
           <ul className="nav-menu">
             <li><a href="#home" className="active">Home</a></li>
-            <li><a href="#about">Tentang</a></li>
-            <li><a href="#skills">Keahlian</a></li>
+            <li><a href="#about">On</a></li>
+            <li><a href="#skills">mastery</a></li>
             <li><a href="#techstack">Tech Stack</a></li>
-            <li><a href="#projects">Proyek</a></li>
-            <li><a href="#contact">Kontak</a></li>
+            <li><a href="#projects">project</a></li>
+            <li><a href="#contact">call</a></li>
             <div className="nav-indicator"></div>
           </ul>
           <div className="nav-toggle" id="mobile-menu" data-aos="fade-left">
@@ -1244,7 +1244,7 @@ function App() {
       <section id="about" className="about">
         <div className="container">
           <div className="section-header">
-                <h2>Tentang Saya</h2>
+                <h2>Who I am</h2>
                 <div className="underline"></div>
           </div>
           <div className="about-content">
@@ -1282,7 +1282,7 @@ function App() {
       <section id="skills" className="skills">
         <div className="container">
           <div className="section-header">
-            <h2>Keahlian</h2>
+            <h2>What I'm good at</h2>
             <div className="underline"></div>
           </div>
           <div className="skills-grid">
@@ -1429,7 +1429,7 @@ function App() {
       <section id="projects" className="projects">
         <div className="container">
           <div className="section-header">
-            <h2>Proyek Archive</h2>
+            <h2>The Vault</h2>
             <div className="underline"></div>
           </div>
           <div className="projects-grid">
@@ -1507,7 +1507,7 @@ function App() {
       <section id="contact" className="contact reveal-init">
         <div className="container">
           <div className="section-header">
-            <h2>Hubungi Saya</h2>
+            <h2>Hit me up</h2>
             <div className="underline"></div>
           </div>
           
