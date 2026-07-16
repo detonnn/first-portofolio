@@ -447,6 +447,69 @@ body {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
+/* --- Hover Nama: "Ibnu Dexton" -> "Muhammad Ibnu Dexton Alfathir" --- */
+.hero-name-hover {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.hero-name-hover .name-short,
+.hero-name-hover .name-full {
+    display: block;
+    white-space: nowrap;
+}
+
+.hero-name-hover .name-word {
+    display: inline-block;
+}
+
+.hero-name-hover .name-letter {
+    display: inline-block;
+    color: #ffffff;
+    text-shadow: none;
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity, filter;
+}
+
+/* Teks pendek (default, terlihat) */
+.name-short .name-letter {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+}
+
+/* Teks panjang (tersembunyi, di-overlay tepat di atas teks pendek, satu baris ke kanan) */
+.hero-name-hover .name-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.8em;
+    line-height: 1.3;
+    pointer-events: none;
+}
+
+.name-full .name-letter {
+    opacity: 0;
+    transform: translateX(-14px);
+    filter: blur(6px);
+}
+
+/* Saat di-hover: teks pendek memudar & geser sedikit ke kanan, teks panjang muncul menyusul dari kiri ke kanan */
+.hero-name-hover:hover .name-short .name-letter {
+    opacity: 0;
+    transform: translateX(10px);
+    filter: blur(6px);
+}
+
+.hero-name-hover:hover .name-full .name-letter {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+}
+
 .hero-subtitle {
     font-size: 1.2rem;
     color: var(--primary);
@@ -855,12 +918,12 @@ body {
 
 /* Saat salah satu kartu di-hover, kartu lain sedikit mengecil & meredup
    supaya fokus jatuh ke kartu yang aktif tanpa berlebihan */
-.tech-grid:hover .tech-card {
+.tech-grid:hover .tech-card.tech-card {
     transform: scale(0.94);
     opacity: 0.55;
 }
 
-.tech-grid:hover .tech-card:hover {
+.tech-grid:hover .tech-card.tech-card:hover {
     opacity: 1;
 }
 
@@ -875,12 +938,12 @@ body {
     pointer-events: none;
 }
 
-.tech-card:hover,
-.tech-grid:hover .tech-card {
+.tech-card.tech-card:hover,
+.tech-grid:hover .tech-card.tech-card {
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
 }
 
-.tech-card:hover {
+.tech-card.tech-card:hover {
     transform: scale(1.08);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 24px 48px rgba(255, 255, 255, 0.18);

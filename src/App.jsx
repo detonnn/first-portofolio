@@ -2,6 +2,37 @@ import React, { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
 import './app.css';
 
+// --- Helper untuk animasi hover nama (huruf per huruf dengan delay bertahap) ---
+function renderAnimatedName(text, keyPrefix) {
+  const words = text.split(' ');
+  let letterIndex = 0;
+  const nodes = [];
+
+  words.forEach((word, wi) => {
+    nodes.push(
+      <span className="name-word" key={`${keyPrefix}-w${wi}`}>
+        {word.split('').map((ch, ci) => {
+          const delay = (letterIndex++) * 0.028;
+          return (
+            <span
+              key={`${keyPrefix}-w${wi}-c${ci}`}
+              className="name-letter"
+              style={{ transitionDelay: `${delay}s` }}
+            >
+              {ch}
+            </span>
+          );
+        })}
+      </span>
+    );
+    if (wi < words.length - 1) {
+      nodes.push(' ');
+    }
+  });
+
+  return nodes;
+}
+
 function App() {
   useEffect(() => {
     console.log("React Portofolio Ibnu Dexton Berhasil Jalan!");
@@ -1189,11 +1220,11 @@ function App() {
           </div>
           <ul className="nav-menu">
             <li><a href="#home" className="active">Home</a></li>
-            <li><a href="#about">On</a></li>
-            <li><a href="#skills">mastery</a></li>
+            <li><a href="#about">Tentang</a></li>
+            <li><a href="#skills">Keahlian</a></li>
             <li><a href="#techstack">Tech Stack</a></li>
-            <li><a href="#projects">project</a></li>
-            <li><a href="#contact">call</a></li>
+            <li><a href="#projects">Proyek</a></li>
+            <li><a href="#contact">Kontak</a></li>
             <div className="nav-indicator"></div>
           </ul>
           <div className="nav-toggle" id="mobile-menu" data-aos="fade-left">
@@ -1211,7 +1242,10 @@ function App() {
             {/* === KOTAK TEKS (SISI KIRI) === */}
             <div className="hero-text">
               <p className="hero-greeting">Halo, Saya</p>
-              <h1 className="hero-title">Ibnu Dexton</h1>
+              <h1 className="hero-title hero-name-hover">
+                <span className="name-short">{renderAnimatedName('Ibnu Dexton', 'short')}</span>
+                <span className="name-full" aria-hidden="true">{renderAnimatedName('Muhamad Ibnu Dexton Alfathir', 'full')}</span>
+              </h1>
               <p className="hero-subtitle">Desainer Komunikasi Visual | Lulusan SMKN 5 Kota Tangerang</p>
               <p className="hero-desc">Menciptakan karya visual yang impactful dan estetis untuk berbagai client ternama.</p>
               <div className="hero-buttons">
@@ -1244,7 +1278,7 @@ function App() {
       <section id="about" className="about">
         <div className="container">
           <div className="section-header">
-                <h2>Who I am</h2>
+                <h2>Tentang Saya</h2>
                 <div className="underline"></div>
           </div>
           <div className="about-content">
@@ -1282,7 +1316,7 @@ function App() {
       <section id="skills" className="skills">
         <div className="container">
           <div className="section-header">
-            <h2>What I'm good at</h2>
+            <h2>Keahlian</h2>
             <div className="underline"></div>
           </div>
           <div className="skills-grid">
@@ -1429,48 +1463,48 @@ function App() {
       <section id="projects" className="projects">
         <div className="container">
           <div className="section-header">
-            <h2>The Vault</h2>
+            <h2>Proyek Archive</h2>
             <div className="underline"></div>
           </div>
           <div className="projects-grid">
-            <a href="https://youtu.be/WwLDZrngERA?si=7YH2bM7CIWKf1YlC" target="_blank" rel="noopener noreferrer" className="project-card-link">
+            <a href="https://www.garudaps.com/" target="_blank" rel="noopener noreferrer" className="project-card-link">
               <div className="project-card">
-                <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80')" }}></div>
+                <div className="project-img" style={{ backgroundImage: "url('GARUDA PS 2026.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>editing vlog evos esport</h3>
-                  <p>Rebranding lengkap identitas visual kafe lokal Tangerang, meliputi logo, tipografi, kemasan cup, serta desain merchandise.</p>
+                  <h3>brand identity server - Garuda Private Server</h3>
+                  <p>Produksi dan editing video kreatif menggunakan CapCut PC, pembuatan poster, banner, serta optimasi visual thumbnail YouTube untuk meningkatkan CTR klien.</p>
                   <span className="project-tag tag-amber">Branding</span>
                   <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
-            <a href="https://www.behance.net/gallery/135048123/Tangerang-Smart-City-Mobile-App-UIUX-Case-Study" target="_blank" rel="noopener noreferrer" className="project-card-link">
+            <a href="https://www.behance.net/" target="_blank" rel="noopener noreferrer" className="project-card-link">
               <div className="project-card">
-                <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&auto=format&fit=crop&q=80')" }}></div>
+                <div className="project-img" style={{ backgroundImage: "url('logos.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>UI/UX - Tangerang Smart Citizen App</h3>
-                  <p>Prototipe aplikasi layanan publik masyarakat Tangerang yang mempermudah pelaporan fasilitas kota dan administrasi warga.</p>
-                  <span className="project-tag tag-cyan">UI/UX</span>
+                  <h3>Custom Vector Logo & Typography Modification</h3>
+                  <p>Eksperimen dan pengerjaan modifikasi font serta pembuatan logo vektor kustom menggunakan Adobe Illustrator untuk kebutuhan branding komersial.</p>
+                  <span className="project-tag tag-cyan">custom edit</span>
                   <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
-            <a href="https://www.youtube.com/watch?v=FstQ_tPszq4" target="_blank" rel="noopener noreferrer" className="project-card-link">
+            <a href="https://www.instagram.com/azkaprint.official/" target="_blank" rel="noopener noreferrer" className="project-card-link">
               <div className="project-card">
-                <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600&auto=format&fit=crop&q=80')" }}></div>
+                <div className="project-img" style={{ backgroundImage: "url('azka.png')" }}></div>
                 <div className="project-info">
-                  <h3>Profile Video - SMKN 5 Kota Tangerang</h3>
-                  <p>Produksi video profil sekolah dengan editing sinematik serta integrasi motion graphics 2D untuk informasi jurusan DKV.</p>
-                  <span className="project-tag tag-lime">Motion Graphics</span>
+                  <h3>Print Media Design & Packaging Workflow - Internship</h3>
+                  <p>Pengalaman 3 bulan magang di industri percetakan dan online shop packing, menangani kesiapan berkas desain sebelum naik cetak dan standardisasi visual produk.</p>
+                  <span className="project-tag tag-lime">Layout & Cetak</span>
                   <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
-            <a href="https://www.behance.net/gallery/117953609/Local-Pride-Indonesian-Streetwear-Brand-Catalog" target="_blank" rel="noopener noreferrer" className="project-card-link">
+            <a href="https://www.instagram.com/attics.std?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="project-card-link">
               <div className="project-card">
-                <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80')" }}></div>
+                <div className="project-img" style={{ backgroundImage: "url('atticsjpg.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>Zine & Catalog - Local Fashion Pride</h3>
+                  <h3>create own brand</h3>
                   <p>Desain layout katalog dan majalah visual berskala cetak untuk mempromosikan brand fashion lokal asal Tangerang.</p>
                   <span className="project-tag tag-amber">Layout & Cetak</span>
                   <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
@@ -1507,7 +1541,7 @@ function App() {
       <section id="contact" className="contact reveal-init">
         <div className="container">
           <div className="section-header">
-            <h2>Hit me up</h2>
+            <h2>Hubungi Saya</h2>
             <div className="underline"></div>
           </div>
           
