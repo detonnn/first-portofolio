@@ -1684,7 +1684,6 @@ function App() {
             <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый minimum - SABI</li>
             <li data-src="/mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="/mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
             <li data-src="/ask.mp3" data-title="Akatsuki Theme" data-artist="akatsuki" data-cover="/akatsuki.jpg">Akatsuki Theme - akatsuki</li>
-            <li data-src="/orochi.mp3" data-title="orochimaru theme" data-artist="orochimaru" data-cover="/manga.jpg">orochimaru theme - orochimaru</li>
             <li data-src="/konan.mp3" data-title="Girei (pain theme)" data-artist="naruto shippuden" data-cover="/pain.jpg">Girei (pain theme) - naruto shippuden</li>
             <li data-src="/clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="/Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
           </ul>
