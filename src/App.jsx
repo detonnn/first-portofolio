@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
 import './app.css';
+import { translations, CF_MODELS } from './i18n';
 
 // --- Helper untuk animasi hover nama (huruf per huruf dengan delay bertahap) ---
 function renderAnimatedName(text, keyPrefix) {
@@ -376,12 +377,6 @@ function App() {
       // 3B. CURSOR FOLLOWER SETTINGS (toggle on/off & ganti model gif)
       // ================================================================
       (function() {
-          const CF_MODELS = [
-              { id: 'money', name: 'Money', src: '/money-cash.gif' },
-              { id: 'jellyfish', name: 'Jellyfish', src: '/jellyfish.gif' },
-              { id: 'kriby', name: 'Kriby', src: '/kirby.gif' },
-          ];
-
           const cfImg = document.getElementById('cursorFollowerImg');
           const cfSettings = document.getElementById('cfSettings');
           const cfBtn = document.getElementById('cfSettingsBtn');
@@ -395,11 +390,69 @@ function App() {
           let isOff = localStorage.getItem('cf_off') === '1';
           let activeModel = localStorage.getItem('cf_model') || CF_MODELS[0].id;
 
+          // ============================================================
+          // BAHASA / LANGUAGE SWITCHER (terpisah dari model cursor, tapi
+          // masih satu panel Pengaturan biar rapi & gampang ditemukan)
+          // ============================================================
+          let currentLang = localStorage.getItem('site_lang') || 'id';
+
+          function t(key) {
+              return (translations[currentLang] && translations[currentLang][key]) || translations.id[key] || '';
+          }
+
+          function applyLanguage(lang) {
+              currentLang = (lang === 'en') ? 'en' : 'id';
+              localStorage.setItem('site_lang', currentLang);
+              document.documentElement.lang = currentLang;
+
+              document.querySelectorAll('[data-i18n]').forEach(el => {
+                  const key = el.getAttribute('data-i18n');
+                  const val = t(key);
+                  if (val) el.textContent = val;
+              });
+              document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                  const key = el.getAttribute('data-i18n-placeholder');
+                  const val = t(key);
+                  if (val) el.placeholder = val;
+              });
+              document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                  const key = el.getAttribute('data-i18n-title');
+                  const val = t(key);
+                  if (val) el.title = val;
+              });
+              document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+                  const key = el.getAttribute('data-i18n-aria');
+                  const val = t(key);
+                  if (val) el.setAttribute('aria-label', val);
+              });
+
+              applyState(); // refresh label Matiin/Nyalain sesuai bahasa aktif
+              renderLangList();
+          }
+
+          function renderLangList() {
+              if (!cfLangList) return;
+              cfLangList.innerHTML = '';
+              const LANGS = [
+                  { id: 'id', labelKey: 'langIdLabel' },
+                  { id: 'en', labelKey: 'langEnLabel' },
+              ];
+              LANGS.forEach(l => {
+                  const item = document.createElement('button');
+                  item.className = 'cf-settings-item cf-lang-item' + (l.id === currentLang ? ' active' : '');
+                  item.innerHTML = `<i class="fas fa-language"></i> ${t(l.labelKey)}` + (l.id === currentLang ? ' <i class="fas fa-check cf-check"></i>' : '');
+                  item.addEventListener('click', () => applyLanguage(l.id));
+                  cfLangList.appendChild(item);
+              });
+          }
+
+          const cfLangList = document.getElementById('cfLangList');
+
           function applyState() {
               const model = CF_MODELS.find(m => m.id === activeModel) || CF_MODELS[0];
               cfImg.src = model.src;
               cursorFollower.style.display = isOff ? 'none' : 'block';
-              cfToggleLabel.textContent = isOff ? 'Nyalain' : 'Matiin';
+              cfToggleLabel.textContent = isOff ? t('cfToggleOn') : t('cfToggleOff');
               cfToggleBtn.querySelector('i').className = isOff ? 'fas fa-eye-slash' : 'fas fa-eye';
           }
 
@@ -436,6 +489,7 @@ function App() {
 
           applyState();
           renderModelList();
+          applyLanguage(currentLang);
       })();
 
       // ================================================================
@@ -811,158 +865,9 @@ function App() {
           });
       }
 
-      // LEFT MUSIC PLAYER (Now Playing Widget)
-      try {
-          const leftToggleBtn = document.getElementById('leftPlayerToggle');
-          const leftPlayerBox = document.querySelector('.left-music-player');
-          const playlistItems = Array.from(document.querySelectorAll('#musicPlaylist li'));
-          const audioUtama = document.getElementById('bgMusic');
-          const teksJudulLaguKanan = document.getElementById('miniTrackTitle');
-          const volumeSliderKanan = document.getElementById('volumeSlider');
-
-          const npTitle = document.getElementById('npTitle');
-          const npArtist = document.getElementById('npArtist');
-          const npPlayPauseBtn = document.getElementById('npPlayPause');
-          const npPrevBtn = document.getElementById('npPrev');
-          const npNextBtn = document.getElementById('npNext');
-          const npProgressBar = document.getElementById('npProgressBar');
-          const npCurrentTime = document.getElementById('npCurrentTime');
-          const npDuration = document.getElementById('npDuration');
-          const npVolumeSlider = document.getElementById('npVolumeSlider');
-
-          if (!audioUtama || playlistItems.length === 0) throw new Error('Elemen musik tidak lengkap');
-
-          let currentIndex = Math.floor(Math.random() * playlistItems.length);
-
-          playlistItems.forEach(li => li.classList.remove('active'));
-          if (playlistItems[currentIndex]) {
-              playlistItems[currentIndex].classList.add('active');
-          }
-
-          function formatTime(seconds) {
-              if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) return '0:00';
-              const m = Math.floor(seconds / 60);
-              const s = Math.floor(seconds % 60);
-              return `${m}:${s < 10 ? '0' : ''}${s}`;
-          }
-
-          function updatePlayIcon(isPlaying) {
-              if (npPlayPauseBtn) {
-                  const icon = npPlayPauseBtn.querySelector('i');
-                  if (icon) {
-                      icon.classList.toggle('fa-pause', isPlaying);
-                      icon.classList.toggle('fa-play', !isPlaying);
-                  }
-              }
-              if (leftPlayerBox) leftPlayerBox.classList.toggle('paused', !isPlaying);
-          }
-
-          function loadTrack(index, autoplay = true) {
-              const item = playlistItems[index];
-              if (!item) return;
-              currentIndex = index;
-
-              const src = item.getAttribute('data-src');
-              const title = item.getAttribute('data-title') || 'Unknown Title';
-              const artist = item.getAttribute('data-artist') || 'Unknown Artist';
-              const cover = item.getAttribute('data-cover') || '/default-cover.jpg';
-
-              playlistItems.forEach(li => li.classList.remove('active'));
-              item.classList.add('active');
-
-              audioUtama.src = src;
-
-              const coverImg = document.getElementById('npCoverImg');
-              if (coverImg) coverImg.src = cover;
-
-              if (npTitle) npTitle.textContent = title;
-              if (npArtist) npArtist.textContent = artist;
-              if (teksJudulLaguKanan) teksJudulLaguKanan.textContent = artist ? `${title} - ${artist}` : title;
-              
-              if (npProgressBar) npProgressBar.value = 0; 
-              if (npCurrentTime) npCurrentTime.textContent = '0:00';
-              if (npDuration) npDuration.textContent = '-0:00';
-
-              if (autoplay) {
-                  audioUtama.play().catch(err => console.log('Gagal play:', err));
-              }
-          }
-
-          if (leftToggleBtn && leftPlayerBox) {
-              leftToggleBtn.addEventListener('click', () => leftPlayerBox.classList.toggle('open'));
-          }
-
-          playlistItems.forEach((item, index) => {
-              item.addEventListener('click', () => loadTrack(index, true));
-          });
-
-          if (npPlayPauseBtn) {
-              npPlayPauseBtn.addEventListener('click', () => {
-                  if (audioUtama.paused) audioUtama.play().catch(err => console.log('Gagal play:', err));
-                  else audioUtama.pause();
-              });
-          }
-
-          if (npPrevBtn) {
-              npPrevBtn.addEventListener('click', () => {
-                  const newIndex = (currentIndex - 1 + playlistItems.length) % playlistItems.length;
-                  loadTrack(newIndex, true);
-              });
-          }
-          if (npNextBtn) {
-              npNextBtn.addEventListener('click', () => {
-                  const newIndex = (currentIndex + 1) % playlistItems.length;
-                  loadTrack(newIndex, true);
-              });
-          }
-
-          audioUtama.addEventListener('timeupdate', () => {
-              if (!audioUtama.duration) return;
-              const percent = (audioUtama.currentTime / audioUtama.duration) * 100;
-              if (npProgressBar) npProgressBar.value = percent; 
-              if (npCurrentTime) npCurrentTime.textContent = formatTime(audioUtama.currentTime);
-              if (npDuration) npDuration.textContent = `-${formatTime(audioUtama.duration - audioUtama.currentTime)}`;
-          });
-
-          audioUtama.addEventListener('loadedmetadata', () => {
-              if (npDuration) npDuration.textContent = `-${formatTime(audioUtama.duration)}`;
-          });
-
-          audioUtama.addEventListener('play', () => updatePlayIcon(true));
-          audioUtama.addEventListener('pause', () => updatePlayIcon(false));
-          audioUtama.addEventListener('ended', () => {
-              const newIndex = (currentIndex + 1) % playlistItems.length;
-              loadTrack(newIndex, true);
-          });
-
-          if (npProgressBar) {
-              npProgressBar.addEventListener('input', (e) => {
-                  if (!audioUtama.duration) return;
-                  const percent = e.target.value / 100;
-                  audioUtama.currentTime = percent * audioUtama.duration;
-              });
-          }
-
-          if (npVolumeSlider) {
-              npVolumeSlider.value = audioUtama.volume;
-              npVolumeSlider.addEventListener('input', (e) => {
-                  const v = parseFloat(e.target.value);
-                  audioUtama.volume = v;
-                  audioUtama.muted = v === 0;
-                  if (volumeSliderKanan) volumeSliderKanan.value = v;
-              });
-          }
-          if (volumeSliderKanan && npVolumeSlider) {
-              volumeSliderKanan.addEventListener('input', () => {
-                  npVolumeSlider.value = volumeSliderKanan.value;
-              });
-          }
-
-          loadTrack(currentIndex, false);
-          console.log('[MUSIC] Player kiri berhasil diinisialisasi.');
-      } catch (error) {
-          console.warn('[MUSIC] Error pada player kiri:', error.message);
-      }
+      // (Left music player widget & playlist dihapus biar ringan di HP low-end.
+      // Sekarang cuma 1 lagu "no pole" jalan lewat #bgMusic, dikontrol dari
+      // tombol musik di kanan bawah — sudah ditangani di section 11 di atas.)
 
       // ================================================================
       // 12. COMMENT SECTION & PARTICLE LEAVES (RE-TUNED)
@@ -1177,18 +1082,22 @@ function App() {
         <img src="/money-cash.gif" alt="Cursor Follower" id="cursorFollowerImg" />
       </div>
 
-      {/* Cursor Follower Settings */}
+      {/* Cursor Follower Settings + Language Switcher (satu panel, dua grup terpisah) */}
       <div className="cf-settings" id="cfSettings">
-        <button className="cf-settings-btn" id="cfSettingsBtn" aria-label="Pengaturan Cursor">
+        <button className="cf-settings-btn" id="cfSettingsBtn" data-i18n-aria="cfSettingsAria" aria-label="Pengaturan Cursor">
           <i className="fas fa-gear"></i>
         </button>
         <div className="cf-settings-menu" id="cfSettingsMenu">
           <button className="cf-settings-item" id="cfToggleBtn">
-            <i className="fas fa-eye"></i> <span id="cfToggleLabel">Matiin</span>
+            <i className="fas fa-eye"></i> <span id="cfToggleLabel" data-i18n="cfToggleOff">Matiin</span>
           </button>
           <div className="cf-settings-divider"></div>
-          <span className="cf-settings-title">Ganti Model</span>
+          <span className="cf-settings-title" data-i18n="cfChangeModel">Ganti Model</span>
           <div id="cfModelList"></div>
+
+          <div className="cf-settings-divider"></div>
+          <span className="cf-settings-title" data-i18n="langSectionTitle">Bahasa</span>
+          <div id="cfLangList"></div>
         </div>
       </div>
       
@@ -1219,12 +1128,12 @@ function App() {
             <span>Ibnu dexton</span>
           </div>
           <ul className="nav-menu">
-            <li><a href="#home" className="active">Home</a></li>
-            <li><a href="#about">Tentang</a></li>
-            <li><a href="#skills">Keahlian</a></li>
-            <li><a href="#techstack">Tech Stack</a></li>
-            <li><a href="#projects">Proyek</a></li>
-            <li><a href="#contact">Kontak</a></li>
+            <li><a href="#home" className="active" data-i18n="navHome">Home</a></li>
+            <li><a href="#about" data-i18n="navAbout">Tentang</a></li>
+            <li><a href="#skills" data-i18n="navSkills">Keahlian</a></li>
+            <li><a href="#techstack" data-i18n="navTechstack">Tech Stack</a></li>
+            <li><a href="#projects" data-i18n="navProjects">Proyek</a></li>
+            <li><a href="#contact" data-i18n="navContact">Kontak</a></li>
             <div className="nav-indicator"></div>
           </ul>
           <div className="nav-toggle" id="mobile-menu" data-aos="fade-left">
@@ -1241,16 +1150,16 @@ function App() {
           <div className="hero-content">
             {/* === KOTAK TEKS (SISI KIRI) === */}
             <div className="hero-text">
-              <p className="hero-greeting">Halo, Saya</p>
+              <p className="hero-greeting" data-i18n="heroGreeting">Halo, Saya</p>
               <h1 className="hero-title hero-name-hover">
                 <span className="name-short">{renderAnimatedName('Ibnu Dexton', 'short')}</span>
                 <span className="name-full" aria-hidden="true">{renderAnimatedName('Muhamad Ibnu Dexton Alfathir', 'full')}</span>
               </h1>
-              <p className="hero-subtitle">Desainer Komunikasi Visual | Lulusan SMKN 5 Kota Tangerang</p>
-              <p className="hero-desc">Menciptakan karya visual yang impactful dan estetis untuk berbagai client ternama.</p>
+              <p className="hero-subtitle" data-i18n="heroSubtitle">Desainer Komunikasi Visual | Lulusan SMKN 5 Kota Tangerang</p>
+              <p className="hero-desc" data-i18n="heroDesc">Menciptakan karya visual yang impactful dan estetis untuk berbagai client ternama.</p>
               <div className="hero-buttons">
-                <a href="#projects" className="btn btn-primary">Lihat Proyek</a>
-                <a href="#contact" className="btn btn-secondary">Hubungi Saya</a>
+                <a href="#projects" className="btn btn-primary" data-i18n="heroBtnProjects">Lihat Proyek</a>
+                <a href="#contact" className="btn btn-secondary" data-i18n="heroBtnContact">Hubungi Saya</a>
               </div>
               <div className="hero-social">
                 <a href="https://www.instagram.com/dxtnn_" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>
@@ -1269,7 +1178,7 @@ function App() {
           </div>
         </div>
         <div className="scroll-indicator">
-          <span>Scroll</span>
+          <span data-i18n="scrollIndicator">Scroll</span>
           <i className="fas fa-chevron-down"></i>
         </div>
       </section>
@@ -1278,26 +1187,26 @@ function App() {
       <section id="about" className="about">
         <div className="container">
           <div className="section-header">
-                <h2>Tentang Saya</h2>
+                <h2 data-i18n="aboutHeader">Tentang Saya</h2>
                 <div className="underline"></div>
           </div>
           <div className="about-content">
             <div className="about-text">
-              <h3>amateur nya tangerang</h3>
-              <p>Saya Ibnu Dexton, lulusan SMKN 5 Kota Tangerang dengan jurusan Desain Komunikasi Visual. Dengan passion dalam menciptakan desain yang bermakna, saya telah bekerja dengan berbagai klien dari berbagai industries.</p>
-              <p>Pendekatan saya adalah menggabungkan estetika modern dengan fungsi yang jelas, memastikan setiap proyek tidak hanya terlihat indah tetapi juga efektif dalam menyampaikan pesan.</p>
+              <h3 data-i18n="aboutSubtitle">amateur nya tangerang</h3>
+              <p data-i18n="aboutP1">Saya Ibnu Dexton, lulusan SMKN 5 Kota Tangerang dengan jurusan Desain Komunikasi Visual. Dengan passion dalam menciptakan desain yang bermakna, saya telah bekerja dengan berbagai klien dari berbagai industries.</p>
+              <p data-i18n="aboutP2">Pendekatan saya adalah menggabungkan estetika modern dengan fungsi yang jelas, memastikan setiap proyek tidak hanya terlihat indah tetapi juga efektif dalam menyampaikan pesan.</p>
               <div className="about-stats">
                 <div className="stat">
                   <span className="stat-number" data-target="20">0+</span>
-                  <span className="stat-label">Proyek Selesai</span>
+                  <span className="stat-label" data-i18n="statProjects">Proyek Selesai</span>
                 </div>
                 <div className="stat">
                   <span className="stat-number" data-target="15">0+</span>
-                  <span className="stat-label">Klien Puas</span>
+                  <span className="stat-label" data-i18n="statClients">Klien Puas</span>
                 </div>
                 <div className="stat">
                   <span className="stat-number" data-target="4">0</span>
-                  <span className="stat-label">Tahun Pengalaman</span>
+                  <span className="stat-label" data-i18n="statYears">Tahun Pengalaman</span>
                 </div>
               </div>
             </div>
@@ -1316,32 +1225,32 @@ function App() {
       <section id="skills" className="skills">
         <div className="container">
           <div className="section-header">
-            <h2>Keahlian</h2>
+            <h2 data-i18n="skillsHeader">Keahlian</h2>
             <div className="underline"></div>
           </div>
           <div className="skills-grid">
             <div className="skill-card">
               <div className="skill-icon"><i className="fab fa-figma"></i></div>
-              <h3>UI/UX Design</h3>
-              <p>Mendesain antarmuka yang intuitif dan pengalaman pengguna yang engaging.</p>
+              <h3 data-i18n="skillUiuxTitle">UI/UX Design</h3>
+              <p data-i18n="skillUiuxDesc">Mendesain antarmuka yang intuitif dan pengalaman pengguna yang engaging.</p>
               <div className="skill-bar"><div className="skill-progress" style={{ width: '90%' }}></div></div>
             </div>
             <div className="skill-card">
               <div className="skill-icon"><i className="fas fa-pen-nib"></i></div>
-              <h3>Graphic Design</h3>
-              <p>Desain grafis untuk branding, marketing, dan kebutuhan visual lainnya.</p>
+              <h3 data-i18n="skillGraphicTitle">Graphic Design</h3>
+              <p data-i18n="skillGraphicDesc">Desain grafis untuk branding, marketing, dan kebutuhan visual lainnya.</p>
               <div className="skill-bar"><div className="skill-progress" style={{ width: '95%' }}></div></div>
             </div>
             <div className="skill-card">
               <div className="skill-icon"><i className="fas fa-mobile-alt"></i></div>
-              <h3>Motion Design</h3>
-              <p>Animasi dan motion graphics untuk konten digital yang dinamis.</p>
+              <h3 data-i18n="skillMotionTitle">Motion Design</h3>
+              <p data-i18n="skillMotionDesc">Animasi dan motion graphics untuk konten digital yang dinamis.</p>
               <div className="skill-bar"><div className="skill-progress" style={{ width: '80%' }}></div></div>
             </div>
             <div className="skill-card">
               <div className="skill-icon"><i className="fas fa-code"></i></div>
-              <h3>Frontend Dev</h3>
-              <p>Membangun website responsif dengan HTML, CSS, dan JavaScript.</p>
+              <h3 data-i18n="skillFrontendTitle">Frontend Dev</h3>
+              <p data-i18n="skillFrontendDesc">Membangun website responsif dengan HTML, CSS, dan JavaScript.</p>
               <div className="skill-bar"><div className="skill-progress" style={{ width: '75%' }}></div></div>
             </div>
           </div>
@@ -1352,7 +1261,7 @@ function App() {
       <section id="techstack" className="techstack">
         <div className="container">
           <div className="section-header">
-            <h2>Tech Stack</h2>
+            <h2 data-i18n="techstackHeader">Tech Stack</h2>
             <div className="underline"></div>
           </div>
           <div className="tech-grid">
@@ -1363,7 +1272,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" loading="lazy" /></div>
               <h3>React</h3>
-              <p className="tech-desc">Jadi tulang punggung hampir semua UI yang saya bangun—component-based, gampang di-reuse, dan enak dipadukan dengan state management ringan.</p>
+              <p className="tech-desc" data-i18n="techReactDesc">Jadi tulang punggung hampir semua UI yang saya bangun—component-based, gampang di-reuse, dan enak dipadukan dengan state management ringan.</p>
             </div>
 
             <div className="tech-card">
@@ -1373,7 +1282,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/nextdotjs/ffffff" alt="Next.js" loading="lazy" /></div>
               <h3>Next.js</h3>
-              <p className="tech-desc">Andalan untuk proyek yang butuh performa lebih—SSR dan routing bawaannya bikin loading halaman terasa instan tanpa konfigurasi ribet.</p>
+              <p className="tech-desc" data-i18n="techNextDesc">Andalan untuk proyek yang butuh performa lebih—SSR dan routing bawaannya bikin loading halaman terasa instan tanpa konfigurasi ribet.</p>
             </div>
 
             <div className="tech-card">
@@ -1383,7 +1292,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="JavaScript" loading="lazy" /></div>
               <h3>JavaScript</h3>
-              <p className="tech-desc">Bahasa yang paling sering saya sentuh tiap hari—dari logika interaktif kecil sampai integrasi API, selalu jadi lem penghubung antar teknologi lain.</p>
+              <p className="tech-desc" data-i18n="techJsDesc">Bahasa yang paling sering saya sentuh tiap hari—dari logika interaktif kecil sampai integrasi API, selalu jadi lem penghubung antar teknologi lain.</p>
             </div>
 
             <div className="tech-card">
@@ -1393,7 +1302,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/tailwindcss/38BDF8" alt="Tailwind CSS" loading="lazy" /></div>
               <h3>Tailwind</h3>
-              <p className="tech-desc">Bikin proses styling jauh lebih cepat tanpa bolak-balik file CSS terpisah—utility class-nya cocok banget buat iterasi desain yang gesit.</p>
+              <p className="tech-desc" data-i18n="techTailwindDesc">Bikin proses styling jauh lebih cepat tanpa bolak-balik file CSS terpisah—utility class-nya cocok banget buat iterasi desain yang gesit.</p>
             </div>
 
             <div className="tech-card">
@@ -1403,7 +1312,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/php/8892BF" alt="PHP" loading="lazy" /></div>
               <h3>PHP</h3>
-              <p className="tech-desc">Fondasi logika server-side yang saya pakai sejak awal belajar backend—stabil, dokumentasinya luas, dan tetap relevan untuk banyak proyek nyata.</p>
+              <p className="tech-desc" data-i18n="techPhpDesc">Fondasi logika server-side yang saya pakai sejak awal belajar backend—stabil, dokumentasinya luas, dan tetap relevan untuk banyak proyek nyata.</p>
             </div>
 
             <div className="tech-card">
@@ -1413,7 +1322,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/laravel/FF2D20" alt="Laravel" loading="lazy" /></div>
               <h3>Laravel</h3>
-              <p className="tech-desc">Framework favorit untuk merapikan struktur backend—Eloquent dan routing-nya bikin saya bisa fokus ke logika bisnis, bukan boilerplate.</p>
+              <p className="tech-desc" data-i18n="techLaravelDesc">Framework favorit untuk merapikan struktur backend—Eloquent dan routing-nya bikin saya bisa fokus ke logika bisnis, bukan boilerplate.</p>
             </div>
 
             <div className="tech-card">
@@ -1423,7 +1332,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" loading="lazy" /></div>
               <h3>MySQL</h3>
-              <p className="tech-desc">Tempat saya menaruh kepercayaan untuk data yang butuh relasi jelas dan query yang terstruktur rapi di balik layar setiap aplikasi.</p>
+              <p className="tech-desc" data-i18n="techMysqlDesc">Tempat saya menaruh kepercayaan untuk data yang butuh relasi jelas dan query yang terstruktur rapi di balik layar setiap aplikasi.</p>
             </div>
 
             <div className="tech-card">
@@ -1433,7 +1342,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/firebase/FFCA28" alt="Firebase" loading="lazy" /></div>
               <h3>Firebase</h3>
-              <p className="tech-desc">Solusi cepat saat proyek butuh autentikasi atau database real-time tanpa harus bangun server sendiri dari nol.</p>
+              <p className="tech-desc" data-i18n="techFirebaseDesc">Solusi cepat saat proyek butuh autentikasi atau database real-time tanpa harus bangun server sendiri dari nol.</p>
             </div>
 
             <div className="tech-card">
@@ -1443,7 +1352,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/flutter/02569B" alt="Flutter" loading="lazy" /></div>
               <h3>Flutter</h3>
-              <p className="tech-desc">Pilihan saya untuk masuk ke dunia mobile—satu codebase bisa jalan di Android dan iOS, hemat waktu tanpa mengorbankan tampilan.</p>
+              <p className="tech-desc" data-i18n="techFlutterDesc">Pilihan saya untuk masuk ke dunia mobile—satu codebase bisa jalan di Android dan iOS, hemat waktu tanpa mengorbankan tampilan.</p>
             </div>
 
             <div className="tech-card">
@@ -1453,7 +1362,7 @@ function App() {
               </div>
               <div className="tech-icon"><img src="https://cdn.simpleicons.org/dart/0175C2" alt="Dart" loading="lazy" /></div>
               <h3>Dart</h3>
-              <p className="tech-desc">Bahasa di balik setiap widget Flutter yang saya susun—null safety-nya bikin aplikasi mobile lebih jarang crash saat runtime.</p>
+              <p className="tech-desc" data-i18n="techDartDesc">Bahasa di balik setiap widget Flutter yang saya susun—null safety-nya bikin aplikasi mobile lebih jarang crash saat runtime.</p>
             </div>
           </div>
         </div>
@@ -1463,7 +1372,7 @@ function App() {
       <section id="projects" className="projects">
         <div className="container">
           <div className="section-header">
-            <h2>Proyek Archive</h2>
+            <h2 data-i18n="projectsHeader">Proyek Archive</h2>
             <div className="underline"></div>
           </div>
           <div className="projects-grid">
@@ -1471,10 +1380,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('GARUDA PS 2026.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>brand identity server - Garuda Private Server</h3>
-                  <p>Produksi dan editing video kreatif menggunakan CapCut PC, pembuatan poster, banner, serta optimasi visual thumbnail YouTube untuk meningkatkan CTR klien.</p>
-                  <span className="project-tag tag-amber">Branding</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj1Title">brand identity server - Garuda Private Server</h3>
+                  <p data-i18n="proj1Desc">Produksi dan editing video kreatif menggunakan CapCut PC, pembuatan poster, banner, serta optimasi visual thumbnail YouTube untuk meningkatkan CTR klien.</p>
+                  <span className="project-tag tag-amber" data-i18n="proj1Tag">Branding</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1482,10 +1391,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('logos.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>Custom Vector Logo & Typography Modification</h3>
-                  <p>Eksperimen dan pengerjaan modifikasi font serta pembuatan logo vektor kustom menggunakan Adobe Illustrator untuk kebutuhan branding komersial.</p>
-                  <span className="project-tag tag-cyan">custom edit</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj2Title">Custom Vector Logo & Typography Modification</h3>
+                  <p data-i18n="proj2Desc">Eksperimen dan pengerjaan modifikasi font serta pembuatan logo vektor kustom menggunakan Adobe Illustrator untuk kebutuhan branding komersial.</p>
+                  <span className="project-tag tag-cyan" data-i18n="proj2Tag">custom edit</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1493,10 +1402,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('azka.png')" }}></div>
                 <div className="project-info">
-                  <h3>Print Media Design & Packaging Workflow - Internship</h3>
-                  <p>Pengalaman 3 bulan magang di industri percetakan dan online shop packing, menangani kesiapan berkas desain sebelum naik cetak dan standardisasi visual produk.</p>
-                  <span className="project-tag tag-lime">Layout & Cetak</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj3Title">Print Media Design & Packaging Workflow - Internship</h3>
+                  <p data-i18n="proj3Desc">Pengalaman 3 bulan magang di industri percetakan dan online shop packing, menangani kesiapan berkas desain sebelum naik cetak dan standardisasi visual produk.</p>
+                  <span className="project-tag tag-lime" data-i18n="proj3Tag">Layout & Cetak</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1504,10 +1413,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('atticsjpg.jpg')" }}></div>
                 <div className="project-info">
-                  <h3>create own brand</h3>
-                  <p>Desain layout katalog dan majalah visual berskala cetak untuk mempromosikan brand fashion lokal asal Tangerang.</p>
-                  <span className="project-tag tag-amber">Layout & Cetak</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj4Title">create own brand</h3>
+                  <p data-i18n="proj4Desc">Desain layout katalog dan majalah visual berskala cetak untuk mempromosikan brand fashion lokal asal Tangerang.</p>
+                  <span className="project-tag tag-amber" data-i18n="proj4Tag">Layout & Cetak</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1515,10 +1424,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&auto=format&fit=crop&q=80')" }}></div>
                 <div className="project-info">
-                  <h3>Packaging Design - Keripik Tempe Modern</h3>
-                  <p>Desain kemasan makanan ringan lokal dengan ilustrasi modern dan ramah lingkungan agar bersaing di pasar modern.</p>
-                  <span className="project-tag tag-lime">Packaging</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj5Title">Packaging Design - Keripik Tempe Modern</h3>
+                  <p data-i18n="proj5Desc">Desain kemasan makanan ringan lokal dengan ilustrasi modern dan ramah lingkungan agar bersaing di pasar modern.</p>
+                  <span className="project-tag tag-lime" data-i18n="proj5Tag">Packaging</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1526,10 +1435,10 @@ function App() {
               <div className="project-card">
                 <div className="project-img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80')" }}></div>
                 <div className="project-info">
-                  <h3>Social Media Kit - Campaign Launch</h3>
-                  <p>Pembuatan aset visual promosi Instagram feeds dan story untuk produk sepatu lokal berkolaborasi dengan seniman mural.</p>
-                  <span className="project-tag tag-cyan">Social Media</span>
-                  <span className="view-project">Lihat Proyek <i className="fas fa-arrow-right"></i></span>
+                  <h3 data-i18n="proj6Title">Social Media Kit - Campaign Launch</h3>
+                  <p data-i18n="proj6Desc">Pembuatan aset visual promosi Instagram feeds dan story untuk produk sepatu lokal berkolaborasi dengan seniman mural.</p>
+                  <span className="project-tag tag-cyan" data-i18n="proj6Tag">Social Media</span>
+                  <span className="view-project"><span data-i18n="viewProject">Lihat Proyek</span> <i className="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -1541,7 +1450,7 @@ function App() {
       <section id="contact" className="contact reveal-init">
         <div className="container">
           <div className="section-header">
-            <h2>Hubungi Saya</h2>
+            <h2 data-i18n="contactHeader">Hubungi Saya</h2>
             <div className="underline"></div>
           </div>
           
@@ -1557,7 +1466,7 @@ function App() {
               </div>
               <div className="contact-item">
                 <i className="fas fa-map-marker-alt"></i>
-                <span>Tangerang, Indonesia</span>
+                <span data-i18n="contactLocation">Tangerang, Indonesia</span>
               </div>
               <div className="contact-social">
                 <a href="https://www.instagram.com/dxtnn_" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>
@@ -1570,51 +1479,51 @@ function App() {
             <form className="contact-form" id="contactForm">
               <div className="input-group">
                 <input type="text" id="contactName" placeholder=" " required />
-                <label htmlFor="contactName">Nama Lengkap</label>
+                <label htmlFor="contactName" data-i18n="formNameLabel">Nama Lengkap</label>
               </div>
               <div className="input-group">
                 <input type="email" id="contactEmail" placeholder=" " required />
-                <label htmlFor="contactEmail">Email</label>
+                <label htmlFor="contactEmail" data-i18n="formEmailLabel">Email</label>
               </div>
               <div className="input-group">
                 <input type="text" id="contactSubject" placeholder=" " />
-                <label htmlFor="contactSubject">Subjek</label>
+                <label htmlFor="contactSubject" data-i18n="formSubjectLabel">Subjek</label>
               </div>
               <div className="input-group">
                 <textarea id="contactMessage" rows="5" placeholder=" " required></textarea>
-                <label htmlFor="contactMessage">Pesan Anda...</label>
+                <label htmlFor="contactMessage" data-i18n="formMessageLabel">Pesan Anda...</label>
               </div>
-              <button type="submit" className="btn btn-primary btn-animate">Kirim Pesan <i className="fas fa-paper-plane"></i></button>
+              <button type="submit" className="btn btn-primary btn-animate"><span data-i18n="formSendBtn">Kirim Pesan</span> <i className="fas fa-paper-plane"></i></button>
             </form>
           </div>
 
           {/* Comments Section */}
           <div className="comments-section reveal-init">
-            <h3>Apa Kata Pengunjung</h3>
+            <h3 data-i18n="commentsHeader">Apa Kata Pengunjung</h3>
             <div className="comments-list" id="commentsList">
               <div className="comment-card">
                 <div className="comment-avatar"><i className="fas fa-user-astronaut"></i></div>
                 <div className="comment-body">
                   <h4>Rangga Desainer</h4>
-                  <p>Gila, interfacenya smooth banget bro! Terutama efek transisi pas ngescroll. Semangat terus karyanya 🔥</p>
-                  <span className="comment-time">1 jam yang lalu</span>
+                  <p data-i18n="comment1Text">Gila, interfacenya smooth banget bro! Terutama efek transisi pas ngescroll. Semangat terus karyanya 🔥</p>
+                  <span className="comment-time" data-i18n="comment1Time">1 jam yang lalu</span>
                 </div>
               </div>
             </div>
 
             <form id="commentForm" className="comment-form">
-              <h4>Tinggalkan Jejakmu</h4>
+              <h4 data-i18n="commentFormHeader">Tinggalkan Jejakmu</h4>
               <div className="form-row">
                 <div className="input-group">
                   <input type="text" id="commentName" placeholder=" " required />
-                  <label htmlFor="commentName">Nama Kamu</label>
+                  <label htmlFor="commentName" data-i18n="commentNameLabel">Nama Kamu</label>
                 </div>
               </div>
               <div className="input-group">
                 <textarea id="commentText" rows="2" placeholder=" " required></textarea>
-                <label htmlFor="commentText">Komentar mantapmu...</label>
+                <label htmlFor="commentText" data-i18n="commentTextLabel">Komentar mantapmu...</label>
               </div>
-              <button type="submit" className="btn btn-secondary btn-animate">Kirim Komentar <i className="fas fa-comment-dots"></i></button>
+              <button type="submit" className="btn btn-secondary btn-animate"><span data-i18n="commentSendBtn">Kirim Komentar</span> <i className="fas fa-comment-dots"></i></button>
             </form>
           </div>
         </div>
@@ -1623,74 +1532,22 @@ function App() {
       {/* Footer */}
       <footer className="footer">
         <div className="container">
-          <p>&copy; 2026 Ibnu Dexton. All rights reserved.</p>
+          <p data-i18n="footerText">&copy; 2026 Ibnu Dexton. All rights reserved.</p>
         </div>
       </footer>
 
-      {/* AUDIO SOUNDTRACK */}
-      <audio id="bgMusic" src="/clai_obscur.mp3" preload="auto" />
+      {/* AUDIO SOUNDTRACK — single track: no pole (Don Toliver) */}
+      <audio id="bgMusic" src="/pole.mp3" preload="auto" />
 
-      {/* TOMBOL MUSIK (KANAN BAWAH) */}
+      {/* TOMBOL MUSIK (KANAN BAWAH) — hover buat buka slider volume (membesarkan),
+          keluar dari area buat nutup lagi (mengecilkan), klik tombol buat mute/unmute */}
       <div className="music-controller">
         <div className="volume-popover">
-          <span className="track-title" id="miniTrackTitle">Clair Obscur: Expedition 33 - Alicia</span>
+          <span className="track-title" id="miniTrackTitle">no pole - Don Toliver</span>
           <input type="range" id="volumeSlider" min="0" max="1" step="0.05" defaultValue="0.4" />
         </div>
-        <button id="musicToggle" className="music-btn" title="Mute/Unmute Musik">
+        <button id="musicToggle" className="music-btn" data-i18n-title="musicToggleTitle" title="Mute/Unmute Musik">
           <i className="fas fa-music"></i>
-        </button>
-      </div>
-
-      {/* LEFT MUSIC PLAYER PANEL */}
-      <div className="left-music-player" id="leftMusicPlayer">
-        <div className="now-playing-card" id="leftPlayerPanel">
-          <div className="np-cover-wrapper">
-            <img id="npCoverImg" src="/default-cover.jpg" alt="Cover Art" />
-          </div>
-
-          <div className="np-header">
-            <div className="np-art"><i className="fas fa-compact-disc"></i></div>
-            <div className="np-info">
-              <span className="np-eyebrow">NOW PLAYING</span>
-              <h3 id="npTitle" className="np-title">Clair Obscur: Expedition 33</h3>
-              <p id="npArtist" className="np-artist">Alicia</p>
-            </div>
-          </div> 
-          
-          <div className="np-progress-container" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-            <span id="npCurrentTime" style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>0:00</span>
-            <input type="range" id="npProgressBar" min="0" max="100" defaultValue="0" style={{ flex: 1 }} />
-            <span id="npDuration" style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>0:00</span>
-          </div>
-
-          <div className="np-controls">
-            <button className="np-ctrl-btn" id="npPrev"><i className="fas fa-step-backward"></i></button>
-            <button className="np-ctrl-btn np-play" id="npPlayPause"><i className="fas fa-play"></i></button>
-            <button className="np-ctrl-btn" id="npNext"><i className="fas fa-step-forward"></i></button>
-          </div>
-
-          <div className="np-volume">
-            <i className="fas fa-volume-down"></i>
-            <input type="range" id="npVolumeSlider" min="0" max="1" step="0.05" defaultValue="0.4" />
-            <i className="fas fa-volume-up"></i>
-          </div>
-
-          <ul id="musicPlaylist" className="np-playlist" data-lenis-prevent>
-            <li data-src="/neymar.mp3" data-title="TAKA LA DENTRO" data-artist="unique vibes" data-cover="/brazil.jpg">TAKA LA DENTRO - unique vibes</li>
-            <li data-src="/letada.mp3" data-title="ELA KÉ LEITADA" data-artist="dj nifour" data-cover="/neypildun.png">ELA KÉ LEITADA - dj nifour</li>
-            <li data-src="/pole.mp3" data-title="no pole" data-artist="Don Toliver" data-cover="/nop.jpg">no pole - Don Toliver</li>
-            <li data-src="/ariana.mp3" data-title="bye" data-artist="ariana grande" data-cover="/r34.jpg">bye - ariana grande</li>
-            <li data-src="/legacy.mp3" data-title="legacy slowed" data-artist="PIXY" data-cover="/lega.jpg">legacy slowed - PIXY</li>
-            <li data-src="/russian.mp3" data-title="Базовый минимум" data-artist="SABI" data-cover="/Thumbnailrus.jpg">Базовый minimum - SABI</li>
-            <li data-src="/mortemor.mp3" data-title="Мой мармеладный" data-artist="Катя Лель" data-cover="/mor1.jpg">КАТЯ ЛЕЛЬ - Мой мармеладный</li>
-            <li data-src="/ask.mp3" data-title="Akatsuki Theme" data-artist="akatsuki" data-cover="/akatsuki.jpg">Akatsuki Theme - akatsuki</li>
-            <li data-src="/konan.mp3" data-title="Girei (pain theme)" data-artist="naruto shippuden" data-cover="/pain.jpg">Girei (pain theme) - naruto shippuden</li>
-            <li data-src="/clai_obscur.mp3" data-title="Clair Obscur: Expedition 33" data-artist="Alicia" data-cover="/Thumbnailexp.jpg" className="active">Clair Obscur: Expedition 33 - Alicia</li>
-          </ul>
-        </div>
-
-        <button className="left-player-toggle" id="leftPlayerToggle" title="Buka Music Player">
-          <i className="fas fa-chevron-right"></i>
         </button>
       </div>
 
